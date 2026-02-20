@@ -443,6 +443,11 @@ async def process_timecards(files: List[UploadFile] = File(...)):
             # Extract text using OCR
             text = extract_text_from_pdf(contents)
             
+            # DEBUG: Show what OCR extracted
+            print(f"[TIMECARD DEBUG] OCR Text from {file.filename}:")
+            print(f"[TIMECARD DEBUG] First 500 chars: {text[:500]}")
+            print(f"[TIMECARD DEBUG] ---")
+            
             # Detect sheet type
             sheet_type = scanner.detect_sheet_type(text)
             

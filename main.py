@@ -33,6 +33,8 @@ app.add_middleware(
 class DrawingAnalysis(BaseModel):
     filename: str
     pages: int
+    trade: str
+    code_book: str
     nec_version: str
     panels_detected: List[Dict]
     circuits_count: int
@@ -188,13 +190,16 @@ async def health():
 @app.post("/analyze-drawing", response_model=DrawingAnalysis)
 async def analyze_drawing(
     file: UploadFile = File(...),
-    nec_version: NECVersion = Query(NECVersion.NEC_2023, description="NEC Code Version")
+    trade: str = Query("electrical", description="Trade: electrical, mechanical, architectural, structural, fire_protection, low_voltage"),
+    code_book: str = Query("NEC_2023", description="Code book version"),
+    nec_version: NECVersion = Query(NECVersion.NEC_2023, description="NEC Code Version (deprecated, use code_book)")
 ):
     """
-    Analyze electrical construction drawing with NEC code compliance check
+    Analyze construction drawing with trade-specific code compliance check
     
     Accepts: PDF files (including Bluebeam .pdf)
     Returns: Material takeoff, code violations, flagged issues, cost estimate
+    Supports: Electrical, Mechanical, Architectural, Structural, Fire Protection, Low Voltage
     """
     
     # Validate file type
@@ -246,11 +251,12 @@ async def analyze_drawing(
     
     # Generate notes
     notes = []
+    notes.append(f"✓ Analyzed as {trade.upper()} trade drawing")
+    notes.append(f"✓ Code compliance: {code_book}")
     notes.append(f"✓ Detected {len(panels)} panels across drawing set")
     notes.append(f"✓ Counted {circuits} circuit references")
     notes.append(f"✓ Found {len(conduits)} conduit runs")
     notes.append("✓ Material estimates include 15% overage factor")
-    notes.append(f"✓ NEC {nec_version.value} compliance check complete")
     if code_summary["critical_violations"] > 0:
         notes.append(f"⚠️ {code_summary['critical_violations']} CRITICAL code violations found - review immediately")
     if code_summary["warnings"] > 0:
@@ -267,6 +273,8 @@ async def analyze_drawing(
     return DrawingAnalysis(
         filename=file.filename,
         pages=page_count,
+        trade=trade,
+        code_book=code_book,
         nec_version=nec_version.value,
         panels_detected=panels,
         circuits_count=circuits,

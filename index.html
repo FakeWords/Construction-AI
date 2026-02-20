@@ -23,20 +23,24 @@ body {
 header {
   text-align: center;
   margin-bottom: 60px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  color: #a1a1aa;
-  font-size: 1.1rem;
+  color: #94a3b8;
+  font-size: 1.15rem;
+  font-weight: 400;
 }
 
 .upload-section {
@@ -48,11 +52,14 @@ h1 {
   margin-bottom: 40px;
   transition: all 0.3s;
   cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .upload-section:hover {
   border-color: #8b5cf6;
   background: #1f2937;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
 }
 
 .upload-section.dragover {
@@ -81,27 +88,30 @@ input[type="file"] {
 }
 
 .btn {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
-  padding: 14px 32px;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 16px 40px;
+  border-radius: 10px;
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
   margin-top: 20px;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
 .btn:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn:disabled {
   background: #3f3f46;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .file-list {
@@ -348,6 +358,40 @@ input[type="file"] {
 .export-btn:hover {
   background: #059669;
 }
+
+.nec-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: #27303f;
+  color: #e4e4e7;
+  border: 2px solid #3f3f46;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%233b82f6' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 48px;
+}
+
+.nec-select:hover {
+  border-color: #3b82f6;
+  background-color: #1f2937;
+}
+
+.nec-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.nec-select option {
+  background: #1a1f2e;
+  color: #e4e4e7;
+  padding: 12px;
+}
 </style>
 </head>
 <body>
@@ -364,14 +408,32 @@ input[type="file"] {
     <div class="upload-hint">Supports standard PDFs and Bluebeam files</div>
     <input type="file" id="fileInput" accept=".pdf" multiple>
     <button class="btn" onclick="document.getElementById('fileInput').click()">Select Files</button>
+  </div>
+
+  <div style="margin-top: 32px; padding: 32px; background: #1a1f2e; border-radius: 12px; border: 1px solid #27303f;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 0;">
+      <div>
+        <label style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #cbd5e1; font-weight: 600;">Select Trade:</label>
+        <select id="tradeSelect" class="nec-select" onchange="updateCodeBooks()">
+          <option value="electrical">⚡ Electrical</option>
+          <option value="mechanical">🔧 Mechanical (HVAC/Plumbing)</option>
+          <option value="architectural">🏗️ Architectural</option>
+          <option value="structural">🏛️ Structural</option>
+          <option value="fire_protection">🔥 Fire Protection</option>
+          <option value="low_voltage">📡 Low Voltage / Data</option>
+        </select>
+      </div>
+      
+      <div>
+        <label style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: #cbd5e1; font-weight: 600;">Code Book Version:</label>
+        <select id="codeBookSelect" class="nec-select">
+          <!-- Dynamically populated based on trade -->
+        </select>
+      </div>
+    </div>
     
-    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #27303f;">
-      <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a1a1aa;">NEC Code Version:</label>
-      <select id="necVersion" style="background: #27303f; color: #e4e4e7; border: 1px solid #3f3f46; padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
-        <option value="2023">NEC 2023 (Latest)</option>
-        <option value="2020">NEC 2020</option>
-        <option value="2017">NEC 2017</option>
-      </select>
+    <div id="codeDescription" style="margin-top: 20px; padding: 16px; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; border-radius: 6px; font-size: 0.9rem; color: #94a3b8;">
+      <!-- Dynamically populated based on selection -->
     </div>
   </div>
 
@@ -391,8 +453,89 @@ input[type="file"] {
 </div>
 
 <script>
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://construction-ai-production-2023.up.railway.app';
 let selectedFiles = [];
+
+// Code books by trade
+const codeBooks = {
+  electrical: {
+    books: [
+      { value: 'NEC_2023', label: 'NEC 2023 (Latest)' },
+      { value: 'NEC_2020', label: 'NEC 2020' },
+      { value: 'NEC_2017', label: 'NEC 2017' }
+    ],
+    description: 'National Electrical Code - Covers wiring, panels, circuits, grounding, and electrical safety standards.'
+  },
+  mechanical: {
+    books: [
+      { value: 'IMC_2021', label: 'IMC 2021 (International Mechanical Code)' },
+      { value: 'IMC_2018', label: 'IMC 2018' },
+      { value: 'UPC_2021', label: 'UPC 2021 (Uniform Plumbing Code)' },
+      { value: 'IPC_2021', label: 'IPC 2021 (International Plumbing Code)' },
+      { value: 'ASHRAE_90.1', label: 'ASHRAE 90.1 (Energy Standard)' }
+    ],
+    description: 'Mechanical codes cover HVAC systems, ductwork, ventilation, plumbing, pipe sizing, and energy efficiency.'
+  },
+  architectural: {
+    books: [
+      { value: 'IBC_2021', label: 'IBC 2021 (International Building Code)' },
+      { value: 'IBC_2018', label: 'IBC 2018' },
+      { value: 'ADA_2010', label: 'ADA 2010 (Accessibility Standards)' },
+      { value: 'ICC_A117.1', label: 'ICC A117.1 (Accessible Design)' }
+    ],
+    description: 'Building codes cover structural safety, accessibility, egress, occupancy, room dimensions, and finishes.'
+  },
+  structural: {
+    books: [
+      { value: 'IBC_2021_Structural', label: 'IBC 2021 Structural Provisions' },
+      { value: 'ASCE_7-22', label: 'ASCE 7-22 (Loads)' },
+      { value: 'ACI_318-19', label: 'ACI 318-19 (Concrete)' },
+      { value: 'AISC_360-22', label: 'AISC 360-22 (Steel Construction)' }
+    ],
+    description: 'Structural codes cover loads, foundations, concrete, steel, seismic design, and structural safety.'
+  },
+  fire_protection: {
+    books: [
+      { value: 'NFPA_13-2022', label: 'NFPA 13 2022 (Sprinkler Systems)' },
+      { value: 'NFPA_72-2022', label: 'NFPA 72 2022 (Fire Alarm)' },
+      { value: 'IFC_2021', label: 'IFC 2021 (Fire Code)' },
+      { value: 'NFPA_101-2021', label: 'NFPA 101 2021 (Life Safety Code)' }
+    ],
+    description: 'Fire codes cover sprinkler coverage, fire alarm systems, egress, fire resistance, and life safety.'
+  },
+  low_voltage: {
+    books: [
+      { value: 'BICSI_002-2019', label: 'BICSI 002-2019 (Data Center)' },
+      { value: 'TIA-568.2-D', label: 'TIA-568.2-D (Structured Cabling)' },
+      { value: 'TIA-569-E', label: 'TIA-569-E (Pathways & Spaces)' },
+      { value: 'NEC_Article_800', label: 'NEC Article 800 (Communications)' }
+    ],
+    description: 'Low voltage codes cover data cabling, telecom, security, access control, and structured cabling standards.'
+  }
+};
+
+function updateCodeBooks() {
+  const trade = document.getElementById('tradeSelect').value;
+  const codeBookSelect = document.getElementById('codeBookSelect');
+  const description = document.getElementById('codeDescription');
+  
+  // Clear and populate code books
+  codeBookSelect.innerHTML = '';
+  codeBooks[trade].books.forEach(book => {
+    const option = document.createElement('option');
+    option.value = book.value;
+    option.textContent = book.label;
+    codeBookSelect.appendChild(option);
+  });
+  
+  // Update description
+  description.textContent = codeBooks[trade].description;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  updateCodeBooks();
+});
 
 // Drag and drop
 const dropZone = document.getElementById('dropZone');
@@ -462,11 +605,12 @@ async function analyzeFiles() {
   try {
     // For now, analyze first file only (will add batch later)
     const file = selectedFiles[0];
-    const necVersion = document.getElementById('necVersion').value;
+    const trade = document.getElementById('tradeSelect').value;
+    const codeBook = document.getElementById('codeBookSelect').value;
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await fetch(`${API_URL}/analyze-drawing?nec_version=${necVersion}`, {
+    const response = await fetch(`${API_URL}/analyze-drawing?trade=${trade}&code_book=${codeBook}`, {
       method: 'POST',
       body: formData
     });
@@ -496,7 +640,7 @@ function displayResults(data) {
       <div class="result-header">
         <div>
           <div class="result-title">Analysis Complete</div>
-          <div class="result-file">${data.filename} • ${data.pages} page(s) • NEC ${data.nec_version}</div>
+          <div class="result-file">${data.filename} • ${data.pages} page(s) • ${data.trade ? data.trade.toUpperCase() : 'ELECTRICAL'} • ${data.code_book || data.nec_version}</div>
         </div>
         <div>
           <button class="export-btn" onclick="exportReport()">📊 Export Report</button>
@@ -615,12 +759,103 @@ function copyToClipboard() {
 
 function exportReport() {
   const data = window.currentAnalysis;
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `analysis_${data.filename.replace('.pdf', '')}_${Date.now()}.json`;
-  a.click();
+  
+  // Create formatted text report
+  let report = `CONSTRUCTION AI - DRAWING ANALYSIS REPORT
+${'='.repeat(80)}
+
+PROJECT INFORMATION
+File: ${data.filename}
+Pages: ${data.pages}
+NEC Version: ${data.nec_version}
+Analysis Date: ${new Date().toLocaleString()}
+
+${'='.repeat(80)}
+
+SUMMARY
+${'='.repeat(80)}
+Panels Detected: ${data.panels_detected.length}
+Circuits Counted: ${data.circuits_count}
+Conduit Runs: ${data.conduit_runs.length}
+Code Violations: ${data.code_violations.length}
+
+${'='.repeat(80)}
+
+MATERIAL TAKEOFF (includes 15% overage)
+${'='.repeat(80)}
+`;
+
+  Object.entries(data.materials).forEach(([name, qty]) => {
+    report += `${name.padEnd(40)} ${qty}\n`;
+  });
+
+  if (data.code_violations.length > 0) {
+    report += `\n${'='.repeat(80)}\n\nNEC ${data.nec_version} CODE COMPLIANCE\n${'='.repeat(80)}\n\n`;
+    data.code_violations.forEach((v, i) => {
+      report += `${i + 1}. [${v.severity.toUpperCase()}] ${v.code_ref}\n`;
+      report += `   ${v.description}\n`;
+      if (v.location) report += `   Location: ${v.location}\n`;
+      report += `\n`;
+    });
+  }
+
+  if (data.flagged_issues.length > 0) {
+    report += `${'='.repeat(80)}\n\nFLAGGED ISSUES\n${'='.repeat(80)}\n\n`;
+    data.flagged_issues.forEach((issue, i) => {
+      report += `${i + 1}. ${issue}\n`;
+    });
+  }
+
+  report += `\n${'='.repeat(80)}\n\nNOTES\n${'='.repeat(80)}\n\n`;
+  data.notes.forEach((note, i) => {
+    report += `${i + 1}. ${note}\n`;
+  });
+
+  report += `\n${'='.repeat(80)}\n`;
+  report += `Report generated by Construction AI\n`;
+  report += `${new Date().toLocaleString()}\n`;
+  report += `${'='.repeat(80)}\n`;
+
+  // Download as PDF using browser print
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>Analysis Report - ` + data.filename + `</title>
+      <style>
+        body {
+          font-family: 'Courier New', monospace;
+          padding: 40px;
+          max-width: 800px;
+          margin: 0 auto;
+          font-size: 11px;
+          line-height: 1.4;
+        }
+        h1 {
+          text-align: center;
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+        pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+        }
+        @media print {
+          body { padding: 20px; }
+        }
+      </style>
+    </head>
+    <body>
+      <pre>` + report + `</pre>
+      <script>
+        window.onload = function() {
+          window.print();
+        }
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
 }
 </script>
 

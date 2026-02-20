@@ -20,7 +20,8 @@ from timecard_excel import create_timecard_excel
 try:
     from pdf2image import convert_from_bytes
     import pytesseract
-    from PIL import Image
+    from PIL import Image, ImageEnhance, ImageFilter
+    import numpy as np
     OCR_AVAILABLE = True
 except ImportError:
     OCR_AVAILABLE = False
@@ -168,6 +169,43 @@ class MaterialDetector:
         return issues
 
 
+def preprocess_image_for_ocr(image):
+    """
+    Enhance image quality before OCR
+    - Convert to grayscale
+    - Increase contrast
+    - Sharpen
+    - Remove noise
+    """
+    try:
+        # Convert to grayscale
+        image = image.convert('L')
+        
+        # Increase contrast
+        enhancer = ImageEnhance.Contrast(image)
+        image = enhancer.enhance(2.0)
+        
+        # Increase sharpness
+        enhancer = ImageEnhance.Sharpness(image)
+        image = enhancer.enhance(2.0)
+        
+        # Apply threshold to make text more distinct
+        # Convert to numpy for thresholding
+        img_array = np.array(image)
+        # Apply adaptive threshold
+        threshold = np.mean(img_array)
+        img_array = np.where(img_array > threshold, 255, 0).astype(np.uint8)
+        image = Image.fromarray(img_array)
+        
+        # Denoise
+        image = image.filter(ImageFilter.MedianFilter(size=3))
+        
+        return image
+    except Exception as e:
+        print(f"[OCR] Image preprocessing failed: {e}")
+        return image
+
+
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     """Extract text from PDF - combines standard extraction + OCR for complete coverage"""
     try:
@@ -184,14 +222,24 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         if OCR_AVAILABLE:
             try:
                 print(f"[OCR] Starting OCR extraction (pdf2image available: {OCR_AVAILABLE})")
-                # Convert PDF pages to images
-                images = convert_from_bytes(file_bytes, dpi=300)
+                # Convert PDF pages to images at higher DPI for better quality
+                images = convert_from_bytes(file_bytes, dpi=600)  # Increased from 300 to 600
                 print(f"[OCR] Converted to {len(images)} images")
                 
-                # Run OCR on each page
+                # Run OCR on each page with preprocessing
                 for i, image in enumerate(images):
                     print(f"[OCR] Processing page {i+1}/{len(images)}")
-                    page_text = pytesseract.image_to_string(image, config='--psm 6')
+                    
+                    # Preprocess image for better OCR
+                    enhanced_image = preprocess_image_for_ocr(image)
+                    
+                    # Use more aggressive OCR config for better accuracy
+                    # --psm 6: Assume uniform block of text
+                    # --oem 3: Use best available OCR engine
+                    page_text = pytesseract.image_to_string(
+                        enhanced_image, 
+                        config='--psm 6 --oem 3'
+                    )
                     ocr_text += page_text + "\n"
                 
                 print(f"[OCR] Complete - Text extraction: {len(text_extracted)} chars | OCR: {len(ocr_text)} chars")

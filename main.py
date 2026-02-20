@@ -5,7 +5,7 @@ Backend API for processing electrical construction drawings
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import PyPDF2
@@ -13,6 +13,8 @@ import io
 import re
 from datetime import datetime
 from nec_validator import NECValidator, NECVersion, NEC_QUICK_REFERENCE
+from timecard_scanner import TimeCardScanner
+from timecard_excel import create_timecard_excel
 
 # OCR imports for scanned drawings
 try:
@@ -254,6 +256,11 @@ async def analyze_drawing(
     # Extract text
     text = extract_text_from_pdf(contents)
     
+    # DEBUG: Log first 500 chars of extracted text to see what OCR found
+    print(f"[DEBUG] Extracted text sample (first 500 chars):")
+    print(f"[DEBUG] {text[:500]}")
+    print(f"[DEBUG] Total text length: {len(text)} characters")
+    
     if not text.strip():
         raise HTTPException(
             status_code=400, 
@@ -411,6 +418,72 @@ async def batch_analyze(files: List[UploadFile] = File(...)):
         "results": results,
         "timestamp": datetime.now().isoformat()
     }
+
+
+@app.post("/process-timecards")
+async def process_timecards(files: List[UploadFile] = File(...)):
+    """
+    Process multiple time card images and export to Excel
+    
+    Returns: Excel file with FTE and Contractor sheets
+    """
+    
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+    
+    scanner = TimeCardScanner()
+    fte_entries = []
+    contractor_entries = []
+    
+    for file in files:
+        try:
+            # Read file
+            contents = await file.read()
+            
+            # Extract text using OCR
+            text = extract_text_from_pdf(contents)
+            
+            # Detect sheet type
+            sheet_type = scanner.detect_sheet_type(text)
+            
+            print(f"[TIMECARD] Processing {file.filename} as {sheet_type}")
+            
+            # Extract time entries
+            entries = scanner.extract_time_entries(text)
+            
+            # Add to appropriate list
+            if sheet_type == "FTE":
+                fte_entries.extend(entries)
+            else:
+                contractor_entries.extend(entries)
+            
+            print(f"[TIMECARD] Extracted {len(entries)} entries from {file.filename}")
+            
+        except Exception as e:
+            print(f"[TIMECARD] Error processing {file.filename}: {str(e)}")
+            continue
+    
+    # Validate entries
+    fte_validation = scanner.validate_entries(fte_entries)
+    contractor_validation = scanner.validate_entries(contractor_entries)
+    
+    print(f"[TIMECARD] FTE: {fte_validation['total_entries']} entries, {fte_validation['valid_entries']} valid")
+    print(f"[TIMECARD] Contractor: {contractor_validation['total_entries']} entries, {contractor_validation['valid_entries']} valid")
+    
+    # Create Excel file
+    try:
+        excel_bytes = create_timecard_excel(fte_entries, contractor_entries)
+        
+        # Return as downloadable Excel file
+        return Response(
+            content=excel_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename=timecards_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create Excel: {str(e)}")
 
 
 if __name__ == "__main__":

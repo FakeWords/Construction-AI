@@ -416,5 +416,3 @@ async def batch_analyze(files: List[UploadFile] = File(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-#   O C R   e n a b l e d  
- 

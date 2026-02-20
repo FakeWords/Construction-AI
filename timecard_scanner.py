@@ -41,42 +41,58 @@ class TimeCardScanner:
         entries = []
         lines = text.split('\n')
         
-        for line in lines:
+        print(f"[SCANNER] Processing {len(lines)} lines")
+        
+        for line_num, line in enumerate(lines, 1):
             line = line.strip()
             if not line or len(line) < 10:
                 continue
             
+            print(f"[SCANNER] Line {line_num}: {line[:100]}")  # First 100 chars
+            
             # Skip header rows
-            if any(header in line.upper() for header in ['EMPLOYEE ID', 'FULL NAME', 'TIME IN', 'TIME OUT', 'VENDOR']):
+            if any(header in line.upper() for header in ['EMPLOYEE ID', 'FULL NAME', 'TIME IN', 'TIME OUT', 'VENDOR', 'TESLA']):
+                print(f"[SCANNER] Line {line_num}: SKIPPED (header)")
                 continue
             
             # Check if line has pipe delimiters (table format)
             if '|' in line:
+                print(f"[SCANNER] Line {line_num}: Has pipes, splitting...")
                 parts = [p.strip() for p in line.split('|')]
+                print(f"[SCANNER] Line {line_num}: Split into {len(parts)} parts: {parts}")
                 
                 # Need at least ID and Name
                 if len(parts) < 2:
+                    print(f"[SCANNER] Line {line_num}: SKIPPED (not enough parts)")
                     continue
                 
                 # Column 1: Employee ID (clean to digits only)
                 employee_id = ''.join(filter(str.isdigit, parts[0]))
+                print(f"[SCANNER] Line {line_num}: Employee ID = '{employee_id}'")
+                
                 if len(employee_id) < 6:
+                    print(f"[SCANNER] Line {line_num}: SKIPPED (ID too short)")
                     continue
                 
                 # Column 2: Full Name (clean to letters/spaces only)
                 full_name = ''.join(c for c in parts[1] if c.isalpha() or c.isspace()).strip()
+                print(f"[SCANNER] Line {line_num}: Full Name = '{full_name}'")
+                
                 if len(full_name) < 3:
+                    print(f"[SCANNER] Line {line_num}: SKIPPED (name too short)")
                     continue
                 
                 # Column 3: Time In (if present)
                 time_in = ""
                 if len(parts) > 2:
                     time_in = self.extract_time_from_text(parts[2])
+                    print(f"[SCANNER] Line {line_num}: Time In = '{time_in}'")
                 
                 # Column 4: Time Out (if present)
                 time_out = ""
                 if len(parts) > 3:
                     time_out = self.extract_time_from_text(parts[3])
+                    print(f"[SCANNER] Line {line_num}: Time Out = '{time_out}'")
                 
                 # Column 5: Meal (extract number)
                 lunch = self.default_lunch
@@ -88,21 +104,23 @@ class TimeCardScanner:
                             lunch = f"{meal_val / 60:.2f}"
                         else:
                             lunch = "0.50"
+                    print(f"[SCANNER] Line {line_num}: Lunch = '{lunch}'")
                 
                 # Column 6: Shift (Day/Night)
                 shift = self.default_shift
                 if len(parts) > 5:
                     if 'NIGHT' in parts[5].upper() or 'N' in parts[5].upper():
                         shift = "Night"
+                    print(f"[SCANNER] Line {line_num}: Shift = '{shift}'")
                 
                 # Column 7: Total Hours
                 hours_worked = ""
                 if len(parts) > 6:
-                    # Extract decimal number
                     hours_text = parts[6]
                     hours_match = re.search(r'(\d+\.?\d*)', hours_text)
                     if hours_match:
                         hours_worked = f"{float(hours_match.group(1)):.2f}"
+                    print(f"[SCANNER] Line {line_num}: Hours = '{hours_worked}'")
                 
                 # Calculate if not provided
                 if not hours_worked and time_in and time_out:
@@ -111,10 +129,14 @@ class TimeCardScanner:
                     except:
                         pass
                 
+                print(f"[SCANNER] Line {line_num}: EXTRACTED ENTRY")
+                
             else:
+                print(f"[SCANNER] Line {line_num}: No pipes, trying fallback pattern")
                 # Fallback: Try original pattern matching for non-table format
                 id_match = re.search(r'(\d{6,9})', line)
                 if not id_match:
+                    print(f"[SCANNER] Line {line_num}: SKIPPED (no ID match)")
                     continue
                 
                 employee_id = id_match.group(1)
@@ -123,6 +145,7 @@ class TimeCardScanner:
                 # Extract name
                 name_match = re.search(r'^([A-Za-z\s\.\-\']{3,40})', remaining)
                 if not name_match:
+                    print(f"[SCANNER] Line {line_num}: SKIPPED (no name match)")
                     continue
                 
                 full_name = name_match.group(1).strip()
@@ -136,6 +159,8 @@ class TimeCardScanner:
                 lunch = self.default_lunch
                 shift = self.default_shift
                 hours_worked = ""
+                
+                print(f"[SCANNER] Line {line_num}: EXTRACTED ENTRY (fallback)")
             
             # Build entry
             entry = {
@@ -169,6 +194,7 @@ class TimeCardScanner:
             
             entries.append(entry)
         
+        print(f"[SCANNER] Total entries extracted: {len(entries)}")
         return entries
     
     def extract_time_from_text(self, text: str) -> str:

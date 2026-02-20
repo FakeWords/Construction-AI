@@ -14,6 +14,15 @@ import re
 from datetime import datetime
 from nec_validator import NECValidator, NECVersion, NEC_QUICK_REFERENCE
 
+# OCR imports for scanned drawings
+try:
+    from pdf2image import convert_from_bytes
+    import pytesseract
+    from PIL import Image
+    OCR_AVAILABLE = True
+except ImportError:
+    OCR_AVAILABLE = False
+
 app = FastAPI(
     title="Construction AI",
     description="AI-powered drawing analysis and material takeoff for electrical contractors",
@@ -158,17 +167,50 @@ class MaterialDetector:
 
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text from PDF (including Bluebeam PDFs)"""
+    """Extract text from PDF - combines standard extraction + OCR for complete coverage"""
     try:
         pdf_file = io.BytesIO(file_bytes)
         reader = PyPDF2.PdfReader(pdf_file)
         
-        text = ""
+        # Extract embedded text first
+        text_extracted = ""
         for page in reader.pages:
-            text += page.extract_text() + "\n"
+            text_extracted += page.extract_text() + "\n"
         
-        return text
+        # ALWAYS run OCR if available - catches text in images, scanned content, etc.
+        ocr_text = ""
+        if OCR_AVAILABLE:
+            try:
+                print(f"[OCR] Starting OCR extraction (pdf2image available: {OCR_AVAILABLE})")
+                # Convert PDF pages to images
+                images = convert_from_bytes(file_bytes, dpi=300)
+                print(f"[OCR] Converted to {len(images)} images")
+                
+                # Run OCR on each page
+                for i, image in enumerate(images):
+                    print(f"[OCR] Processing page {i+1}/{len(images)}")
+                    page_text = pytesseract.image_to_string(image, config='--psm 6')
+                    ocr_text += page_text + "\n"
+                
+                print(f"[OCR] Complete - Text extraction: {len(text_extracted)} chars | OCR: {len(ocr_text)} chars")
+                    
+            except Exception as ocr_error:
+                print(f"[OCR] OCR failed with error: {type(ocr_error).__name__}: {str(ocr_error)}")
+                import traceback
+                print(f"[OCR] Traceback: {traceback.format_exc()}")
+        else:
+            print("[OCR] OCR libraries not available - install pdf2image, pytesseract, and Pillow")
+        
+        # Combine both sources - text extraction + OCR
+        # This catches embedded text AND text in images/scanned content
+        combined_text = text_extracted + "\n\n" + ocr_text
+        
+        return combined_text if combined_text.strip() else text_extracted
+        
     except Exception as e:
+        print(f"[ERROR] PDF extraction failed: {type(e).__name__}: {str(e)}")
+        import traceback
+        print(f"[ERROR] Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail=f"Failed to read PDF: {str(e)}")
 
 

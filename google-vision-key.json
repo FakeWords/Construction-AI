@@ -1,0 +1,191 @@
+{
+  "filename": "test_electrical_drawing.pdf",
+  "pages": 3,
+  "nec_version": "2020",
+  "panels_detected": [
+    {
+      "name": "PANEL -",
+      "location": 392
+    },
+    {
+      "name": "PANEL SCHEDULE",
+      "location": 553
+    },
+    {
+      "name": "PANEL PP-1",
+      "location": 671
+    },
+    {
+      "name": "PANEL PP-2",
+      "location": 811
+    },
+    {
+      "name": "PANEL PP-3",
+      "location": 942
+    },
+    {
+      "name": "PANEL SCHEDULE",
+      "location": 1611
+    },
+    {
+      "name": "Panel Type",
+      "location": 1767
+    },
+    {
+      "name": "PANEL SCHEDULE",
+      "location": 2507
+    },
+    {
+      "name": "Panel Type",
+      "location": 2641
+    },
+    {
+      "name": "PANEL SCHEDULE",
+      "location": 3035
+    },
+    {
+      "name": "Panel Type",
+      "location": 3165
+    },
+    {
+      "name": "MDP",
+      "location": 400
+    },
+    {
+      "name": "MDP",
+      "location": 570
+    },
+    {
+      "name": "MDP",
+      "location": 6188
+    },
+    {
+      "name": "MDP",
+      "location": 6241
+    },
+    {
+      "name": "MDP",
+      "location": 6295
+    },
+    {
+      "name": "DISTRIBUTION PANEL",
+      "location": 379
+    },
+    {
+      "name": "Distribution Panel",
+      "location": 5416
+    }
+  ],
+  "circuits_count": 62,
+  "conduit_runs": [
+    {
+      "size": "1/4",
+      "type": "EMT",
+      "text": "1/4\" EMT"
+    },
+    {
+      "size": "1/4",
+      "type": "EMT",
+      "text": "1/4\" EMT"
+    },
+    {
+      "size": "2",
+      "type": "EMT",
+      "text": "2\" EMT"
+    },
+    {
+      "size": "1",
+      "type": "EMT",
+      "text": "1\" EMT"
+    },
+    {
+      "size": "1",
+      "type": "EMT",
+      "text": "1\" EMT"
+    },
+    {
+      "size": "3/4",
+      "type": "EMT",
+      "text": "3/4\" EMT"
+    },
+    {
+      "size": "3/4",
+      "type": "EMT",
+      "text": "3/4\" EMT"
+    },
+    {
+      "size": "2",
+      "type": "EMT",
+      "text": "2\" EMT"
+    },
+    {
+      "size": "1/4",
+      "type": "EMT",
+      "text": "1/4\" EMT"
+    },
+    {
+      "size": "1",
+      "type": "EMT",
+      "text": "1\" EMT"
+    },
+    {
+      "size": "3/4",
+      "type": "EMT",
+      "text": "3/4\" EMT"
+    }
+  ],
+  "materials": {
+    "Panels": 18,
+    "Circuit Breakers": 71,
+    "EMT Conduit (10' sticks)": 25,
+    "EMT Couplings": 25,
+    "THHN Wire (feet)": 3564
+  },
+  "flagged_issues": [
+    "🔌 Transformer detected - verify primary/secondary sizing",
+    "🌧️ Outdoor location - consider weatherproof/rigid conduit instead of EMT",
+    "⚡ Ground level installation - may require rigid conduit in strikable areas"
+  ],
+  "code_violations": [
+    {
+      "severity": "info",
+      "code_ref": "NEC 300.6(A)",
+      "description": "Outdoor installation: Verify corrosion-resistant materials (PVC, rigid galvanized, or stainless steel)",
+      "location": "Outdoor"
+    },
+    {
+      "severity": "info",
+      "code_ref": "NEC 300.5",
+      "description": "Outdoor burial: Minimum 18\" depth for conduit (24\" for direct burial cable)",
+      "location": "Outdoor"
+    },
+    {
+      "severity": "warning",
+      "code_ref": "NEC 110.11",
+      "description": "Weatherproof enclosures required. Verify NEMA 3R or better rating.",
+      "location": "Outdoor"
+    },
+    {
+      "severity": "info",
+      "code_ref": "NEC 250.24",
+      "description": "Verify grounding electrode system (GES) connection at service equipment",
+      "location": "Service entrance"
+    },
+    {
+      "severity": "info",
+      "code_ref": "NEC 250.32",
+      "description": "Separate building: Verify 4-wire feed or local grounding electrode system",
+      "location": "Subpanel"
+    }
+  ],
+  "cost_estimate": null,
+  "notes": [
+    "✓ Detected 18 panels across drawing set",
+    "✓ Counted 62 circuit references",
+    "✓ Found 11 conduit runs",
+    "✓ Material estimates include 15% overage factor",
+    "✓ NEC 2020 compliance check complete",
+    "⚠️ 1 code warnings flagged"
+  ],
+  "timestamp": "2026-02-19T03:58:24.462142"
+}

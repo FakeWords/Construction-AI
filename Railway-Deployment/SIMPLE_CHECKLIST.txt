@@ -1,0 +1,72 @@
+═══════════════════════════════════════════════════════════════
+RAILWAY DEPLOYMENT - SIMPLE CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+STEP 1: Download "DEPLOY_TO_RAILWAY" folder
+        ✓ Contains all 26 files needed
+
+STEP 2: Add YOUR google-vision-key.json to this folder
+        ✓ The JSON file you downloaded from Google Cloud
+
+STEP 3: Open terminal in DEPLOY_TO_RAILWAY folder
+
+STEP 4: Link to your Railway project
+        railway link
+        (Select your existing project)
+
+STEP 5: Set environment variables in Railway dashboard:
+        GOOGLE_APPLICATION_CREDENTIALS=/app/google-vision-key.json
+        ANTHROPIC_API_KEY=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
+
+STEP 6: Deploy
+        railway up
+
+DONE! Visit https://your-app.railway.app/drawings
+
+═══════════════════════════════════════════════════════════════
+FILES IN DEPLOY_TO_RAILWAY FOLDER (26 total):
+═══════════════════════════════════════════════════════════════
+
+CORE:
+✓ main.py (backend API with new routes)
+✓ requirements.txt (all dependencies)
+✓ Dockerfile
+✓ nixpacks.toml
+
+PAGES:
+✓ index.html (home)
+✓ timecards.html (timecard scanner)
+✓ drawings.html (NEW - drawing analyzer)
+
+DRAWING ANALYZER:
+✓ integrated_agent.py
+✓ drawing_preprocessor.py
+✓ google_vision_ocr.py
+✓ text_assembly.py
+✓ excel_export.py
+✓ scale_calibration.py
+
+KNOWLEDGE BASE:
+✓ switchboard_logic.py
+✓ electrical_equipment_complete.py
+✓ multitrade_equipment_logic.py
+✓ blueprint_literacy_deep.py
+✓ construction_symbols.py
+✓ trade_knowledge.py
+
+EXISTING FEATURES:
+✓ timecard_scanner.py
+✓ timecard_excel.py
+✓ nec_validator.py
+
+YOU ADD:
+→ google-vision-key.json (YOUR Google Cloud key)
+
+═══════════════════════════════════════════════════════════════
+THAT'S IT!
+═══════════════════════════════════════════════════════════════
+
+26 files + your Google key = 27 files total
+All in one folder
+Deploy to Railway
+Done! 🚀

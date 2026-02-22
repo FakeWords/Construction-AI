@@ -5,6 +5,7 @@ This is what professional construction tech companies use
 """
 
 import os
+import json
 from google.cloud import vision
 from google.oauth2 import service_account
 import cv2
@@ -43,23 +44,37 @@ class GoogleVisionOCR:
     def __init__(self, credentials_path: str = "google-vision-key.json"):
         """
         Initialize Google Vision client
-        
-        Args:
-            credentials_path: Path to Google Cloud service account JSON key
+        Reads credentials from GOOGLE_CREDENTIALS_JSON env var (production)
+        or falls back to a local file (local development)
         """
-        if not os.path.exists(credentials_path):
-            raise FileNotFoundError(
-                f"Google Vision credentials not found at: {credentials_path}\n"
-                f"Download your service account JSON key and save it as 'google-vision-key.json'"
-            )
-        
         console.print("[cyan]☁️  Initializing Google Cloud Vision...[/cyan]")
         
-        # Load credentials
-        credentials = service_account.Credentials.from_service_account_file(
-            credentials_path,
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
+        # Try environment variable first (production/Railway)
+        credentials_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+        
+        if credentials_json:
+            # Load credentials from environment variable
+            credentials_info = json.loads(credentials_json)
+            credentials = service_account.Credentials.from_service_account_info(
+                credentials_info,
+                scopes=['https://www.googleapis.com/auth/cloud-platform']
+            )
+            console.print("[green]✓ Loaded credentials from environment variable[/green]")
+        
+        elif os.path.exists(credentials_path):
+            # Fall back to local file (for local development)
+            credentials = service_account.Credentials.from_service_account_file(
+                credentials_path,
+                scopes=['https://www.googleapis.com/auth/cloud-platform']
+            )
+            console.print("[green]✓ Loaded credentials from local file[/green]")
+        
+        else:
+            raise FileNotFoundError(
+                f"Google Vision credentials not found.\n"
+                f"Set the GOOGLE_CREDENTIALS_JSON environment variable, "
+                f"or place a key file at: {credentials_path}"
+            )
         
         # Create Vision API client
         self.client = vision.ImageAnnotatorClient(credentials=credentials)

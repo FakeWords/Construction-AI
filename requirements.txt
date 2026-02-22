@@ -4,11 +4,20 @@ python-multipart==0.0.6
 PyPDF2==3.0.1
 pydantic==2.5.3
 
+# Drawing Analysis Dependencies
+anthropic
+google-cloud-vision
+opencv-python-headless
+scikit-image
+shapely
+rich
+
 # OCR for scanned drawings
 pdf2image==1.16.3
 pytesseract==0.3.10
 Pillow==10.1.0
 numpy==1.26.3
 
-# Excel export for time cards
+# Excel export
 openpyxl==3.1.2
+xlsxwriter

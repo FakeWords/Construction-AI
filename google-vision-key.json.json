@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "fieldwise-io",
+  "private_key_id": "2ef52964e431051401f1cdcd440e7710ec785929",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC9EyJb9TKqJvi2\nsjGMG72PwsOJzsi+nuGPSWa0JNh+mHs5EP7TjzXlI26IuzclR/gz6SVefN+bTghG\nsR1oY/ko29EzCuv1Rt1yuG2NbNbY5P5PnVZUhYDKQCMJIAmClsIG3a5iwALD4tOU\nw1onipawks6m42poXxNaa0Ahxq5UW6Zu7uDw1Hcqn6fCBfbaZhXhp2PKWtonNLGB\n2g84c1EwSBa4IwJcdNRVV0hN0GtG0VbtVcSV05ZccZAks9xtTSbR3K7hGnr3vKvk\njEilOIj/7hxYGhFwmMvLLTui4BhjzcFT4Os8TqmQcvj0WEuXkojrluvQp+WFD3gw\nmRAiYrT3AgMBAAECggEABk4gi7OCFIWHLsSDfXohWK10iuBv9ldjCz215JUD+TjJ\nhy4naVOxxunnEj04ChC72LNSMTP12v5/rSfT5LrMwM2PzOV01/GciepXkOtLwODm\nEC6dheUL1fLMmE3Os2Gmp8b1vUpM7U5foure00m+W7YRmSQlVMSy5wWDlnzDLIHx\nPqYrQYn8SPQf8d7+yVoPOnlytstnQMpk4RBbYB4i+Tavwzr0G9d58qoI9LBcoV5y\nQl2qjBxIhKO5xNTx5fRJPOUHFnWxlPq826biipJ80kXUMibMjkbVj7LyPYzqIQDY\na5u9pBE1h0EPthubUwULFuCAbVGBdiCxoOgTxQbfKQKBgQDe4+A9dvVxTYk2woNQ\niTXdUy6cxLc8RadGl6EoSVSNM9BXZre7y472djk7PgJxC9rmxxhSh9MnKiZOR8hn\nWRsFJIShMko6S+203wv9yiKQVrqaykKu7NRoreVaAELPUAfj3eUvmzAf5vYZGRDB\nNuAs/WzUWvZwoANdJA5Tye3ZyQKBgQDZKVFMxXQ3PlIiSI0sZZaHj4FdZVNBjjFy\nPadePV2KI4OFsnDMxNZt7pTQAgEC3w+MdaqvSMPcM0LVkHa0Zww3NXuqLXZ2l4Gs\npzyuuA8SonLDU/oXXQIT/D9lackSvGSIxva5uBhvfI5F66Qk7GWBXVDE9XAA6i7d\nbIKw+J94vwKBgF1+NHdTyMyH+4BuwuorQ97cn3a+xSWRCgOAYuclK0Q3cbLXsUYi\nsosLOCJzdk647E9VQAyOULHi6kJ3tcY0CDN2B/QdxikB5Gm0DbGc8jadSpTXNnVt\nfgOSvdustFmFdmnMj/ASJnObS6tnajHBtPLqMpY4uZqwY/jTwPbAgvaRAoGAWM28\noVhdnfmuPLbOhElGtUjJ7hdxZG1xavYray5NAiBjuFiwKAyWY34c/LLVFweApD+5\n/NQUxAdyXUMmR7+cDzefyoes2fI65Q++kPRTtZsYsye0LbmrD+EnS6FmyHKh6gzy\n+B+AXpbg11b1WOQS3kP6s5BqrPUXFRU6nIQPMqECgYAVSi3BaqH0thOvzXKHYrWl\nzE69kU1Kt72KENXU2kw7n3jHax5gUeU9mWQse1HYf00XvIBqQx21OGWs/K9QriyL\n8tst8HNFhCicWBwYA/1TIbhGiB6olUIFhJ6Cb2y69S0xY8kg0YqFLDIcIjmKZz51\nzs0alipiJSkc/ToTp3mKYA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "fieldwise-ocr@fieldwise-io.iam.gserviceaccount.com",
+  "client_id": "115706593865433671397",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/fieldwise-ocr%40fieldwise-io.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

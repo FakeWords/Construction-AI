@@ -542,3 +542,73 @@ async def process_timecards(files: List[UploadFile] = File(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+# ═══════════════════════════════════════════════════════════════
+# DRAWING ANALYZER (NEW - INTEGRATED AGENT)
+# ═══════════════════════════════════════════════════════════════
+
+from integrated_agent import IntegratedDrawingAgent
+from excel_export import export_to_excel
+import os
+import shutil
+
+@app.post("/api/analyze-drawing")
+async def analyze_drawing_endpoint(
+    file: UploadFile = File(...),
+    trade: str = "electrical",
+    project_name: str = "Project"
+):
+    """Analyze construction drawing with integrated AI agent"""
+    
+    try:
+        # Save uploaded file
+        upload_dir = "uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        file_path = os.path.join(upload_dir, file.filename)
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Analyze with integrated agent
+        agent = IntegratedDrawingAgent(file_path, trade)
+        analysis = agent.analyze()
+        
+        # Export to Excel
+        excel_file = export_to_excel(analysis, file.filename, project_name)
+        
+        return JSONResponse({
+            "success": True,
+            "analysis": analysis,
+            "excel_file": os.path.basename(excel_file)
+        })
+        
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+
+
+@app.get("/api/download-excel/{filename}")
+async def download_excel(filename: str):
+    """Download Excel takeoff file"""
+    try:
+        with open(filename, "rb") as f:
+            content = f.read()
+        
+        return Response(
+            content=content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/drawings")
+async def drawings_page():
+    """Serve drawings analyzer page"""
+    with open("drawings.html", "r") as f:
+        return Response(content=f.read(), media_type="text/html")
+

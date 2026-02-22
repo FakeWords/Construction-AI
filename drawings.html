@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Analyzer - Fieldwise AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 30px;
+            color: white;
+        }
+        h1 { font-size: 2em; margin-bottom: 5px; }
+        .nav { margin-top: 15px; }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            opacity: 0.8;
+        }
+        .nav a:hover { opacity: 1; }
+        .content { padding: 40px; }
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+        .upload-zone:hover { 
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        .settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        pre {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Fieldwise AI - Drawing Analyzer</h1>
+            <div class="nav">
+                <a href="/">Home</a>
+                <a href="/timecards">Time Cards</a>
+                <a href="/drawings">Drawings</a>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="upload-zone" id="uploadZone">
+                <h2>📐 Drop Construction Drawing Here</h2>
+                <p style="margin-top: 10px;">Supports: PNG, JPG, PDF | All Trades</p>
+                <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display: none">
+            </div>
+            
+            <div class="settings">
+                <div>
+                    <label><strong>Trade:</strong></label>
+                    <select id="tradeSelect">
+                        <option value="electrical">⚡ Electrical</option>
+                        <option value="mechanical">🔧 HVAC/Mechanical</option>
+                        <option value="plumbing">🚰 Plumbing</option>
+                        <option value="fire_protection">🔥 Fire Protection</option>
+                    </select>
+                </div>
+                <div>
+                    <label><strong>Project Name:</strong></label>
+                    <input type="text" id="projectName" placeholder="Enter project name" value="Construction Project">
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="analyzeBtn" style="display: none;">🚀 Analyze Drawing</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px; font-size: 18px;">Analyzing drawing with AI...</p>
+                <p style="margin-top: 10px; opacity: 0.7;">This may take 1-2 minutes</p>
+            </div>
+            
+            <div class="results" id="results">
+                <h3>✅ Analysis Complete!</h3>
+                <pre id="analysisText"></pre>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button id="downloadBtn">📥 Download Excel Takeoff</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        let selectedFile = null;
+        let excelFile = null;
+        
+        uploadZone.onclick = () => fileInput.click();
+        
+        fileInput.onchange = (e) => {
+            selectedFile = e.target.files[0];
+            uploadZone.innerHTML = `<h2>✓ ${selectedFile.name}</h2><p>Ready to analyze</p>`;
+            analyzeBtn.style.display = 'inline-block';
+        };
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            selectedFile = e.dataTransfer.files[0];
+            uploadZone.innerHTML = `<h2>✓ ${selectedFile.name}</h2><p>Ready to analyze</p>`;
+            analyzeBtn.style.display = 'inline-block';
+        });
+        
+        analyzeBtn.onclick = async () => {
+            loading.style.display = 'block';
+            analyzeBtn.style.display = 'none';
+            results.style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('trade', document.getElementById('tradeSelect').value);
+            formData.append('project_name', document.getElementById('projectName').value);
+            
+            try {
+                const response = await fetch('/api/analyze-drawing', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loading.style.display = 'none';
+                    results.style.display = 'block';
+                    document.getElementById('analysisText').textContent = data.analysis;
+                    excelFile = data.excel_file;
+                } else {
+                    alert('Error: ' + data.error);
+                    loading.style.display = 'none';
+                    analyzeBtn.style.display = 'inline-block';
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                loading.style.display = 'none';
+                analyzeBtn.style.display = 'inline-block';
+            }
+        };
+        
+        document.getElementById('downloadBtn').onclick = () => {
+            window.location.href = `/api/download-excel/${excelFile}`;
+        };
+    </script>
+</body>
+</html>

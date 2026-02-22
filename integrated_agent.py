@@ -3,7 +3,7 @@ FIELDWISE AI - ULTIMATE DRAWING ANALYZER
 Combines OpenCV (structure) + Google Vision (OCR) + Claude (reasoning)
 This is production-grade automated electrical takeoff
 """
-
+import os
 import anthropic
 import base64
 import json

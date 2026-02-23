@@ -266,12 +266,8 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
 
 @app.get("/")
 async def root():
-    return {
-        "service": "Construction AI",
-        "version": "1.0.0",
-        "status": "active",
-        "description": "AI-powered drawing analysis for electrical contractors"
-    }
+ with open("index.html", "r") as f:
+    return Response(content=f.read(), media_type="text/html")
 
 
 @app.get("/health")

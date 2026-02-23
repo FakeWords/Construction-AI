@@ -2,7 +2,7 @@
 nixPkgs = ["python311", "tesseract", "poppler_utils", "libpq"]
 
 [phases.install]
-cmds = ["pip install --upgrade pip", "pip install psycopg2-binary bcrypt PyJWT", "pip install -r requirements.txt"]
+cmds = ["pip install --upgrade pip", "pip install psycopg2-binary bcrypt PyJWT anthropic", "pip install -r requirements.txt"]
 
 [start]
 cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"

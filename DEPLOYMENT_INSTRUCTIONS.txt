@@ -1,0 +1,127 @@
+═══════════════════════════════════════════════════════════════
+DEPLOYMENT INSTRUCTIONS - UPDATED WEB APP
+═══════════════════════════════════════════════════════════════
+
+WHAT'S NEW:
+✅ Drawing Analyzer integrated into existing web app
+✅ All modules added (OpenCV, Google Vision, Claude)
+✅ Excel export functionality
+✅ New /drawings page added
+✅ All dependencies updated in requirements.txt
+
+═══════════════════════════════════════════════════════════════
+FILES TO DEPLOY:
+═══════════════════════════════════════════════════════════════
+
+Download the entire "construction-ai-updated" folder.
+
+New files added:
+- integrated_agent.py (main analyzer)
+- drawing_preprocessor.py (OpenCV)
+- google_vision_ocr.py (Google Vision)
+- text_assembly.py (smart grouping)
+- switchboard_logic.py (electrical logic)
+- electrical_equipment_complete.py (equipment knowledge)
+- multitrade_equipment_logic.py (all trades)
+- blueprint_literacy_deep.py (drawing reading)
+- construction_symbols.py (symbol recognition)
+- trade_knowledge.py (NEC validation)
+- excel_export.py (takeoff spreadsheets)
+- scale_calibration.py (distance measurement)
+- drawings.html (new page)
+- google-vision-key.json (YOUR KEY - add this!)
+
+Updated files:
+- main.py (added /api/analyze-drawing routes)
+- requirements.txt (added new dependencies)
+
+═══════════════════════════════════════════════════════════════
+STEP 1: ADD YOUR GOOGLE VISION KEY
+═══════════════════════════════════════════════════════════════
+
+Copy your google-vision-key.json into the construction-ai-updated folder
+
+═══════════════════════════════════════════════════════════════
+STEP 2: UPDATE ENVIRONMENT VARIABLES
+═══════════════════════════════════════════════════════════════
+
+In your Railway/hosting dashboard:
+
+GOOGLE_APPLICATION_CREDENTIALS=/app/google-vision-key.json
+ANTHROPIC_API_KEY=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
+
+═══════════════════════════════════════════════════════════════
+STEP 3: DEPLOY
+═══════════════════════════════════════════════════════════════
+
+If using Railway:
+1. cd construction-ai-updated
+2. railway link (link to your existing project)
+3. railway up
+
+If using Git:
+1. cd construction-ai-updated
+2. git add .
+3. git commit -m "Add drawing analyzer feature"
+4. git push
+
+═══════════════════════════════════════════════════════════════
+STEP 4: TEST
+═══════════════════════════════════════════════════════════════
+
+Visit: https://your-app.railway.app/drawings
+
+Upload SLD.png or any construction drawing
+Select trade
+Click Analyze
+Download Excel takeoff
+
+═══════════════════════════════════════════════════════════════
+NEW ROUTES AVAILABLE:
+═══════════════════════════════════════════════════════════════
+
+GET  /drawings - Drawing analyzer page
+POST /api/analyze-drawing - Upload & analyze drawing
+GET  /api/download-excel/{filename} - Download Excel file
+
+Existing routes still work:
+GET  / - Home
+GET  /timecards - Timecard scanner
+POST /api/scan-timecard - Scan timecard
+
+═══════════════════════════════════════════════════════════════
+NOTES:
+═══════════════════════════════════════════════════════════════
+
+- First deploy will take 3-5 minutes (installing OpenCV, etc.)
+- Each drawing analysis takes 1-2 minutes
+- Google Vision costs $0.0015 per drawing (first 1000 free)
+- Claude API costs ~$0.01 per drawing
+- Total: ~$0.015 per drawing
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING:
+═══════════════════════════════════════════════════════════════
+
+If deployment fails:
+1. Check GOOGLE_APPLICATION_CREDENTIALS path is correct
+2. Verify google-vision-key.json is in the deployment
+3. Check Railway logs for errors
+
+If analysis fails:
+1. Verify both API keys are set
+2. Check file uploaded correctly
+3. Ensure google-vision-key.json has proper permissions
+
+═══════════════════════════════════════════════════════════════
+SUCCESS!
+═══════════════════════════════════════════════════════════════
+
+Your web app now has:
+✅ Timecard scanning (existing)
+✅ Drawing analysis (NEW!)
+✅ Multi-trade support (NEW!)
+✅ Excel export (NEW!)
+✅ Professional takeoffs (NEW!)
+
+Ready to deploy! 🚀

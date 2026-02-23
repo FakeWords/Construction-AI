@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0c0f">
+    <title>Field Tool — Fieldwise AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --surface: #111418;
+            --surface2: #181d24;
+            --border: #1e2530;
+            --accent: #f0a500;
+            --accent2: #e05c2a;
+            --text: #e8eaed;
+            --muted: #6b7280;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overscroll-behavior: none;
+        }
+
+        /* Mobile nav - bottom bar */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 56px;
+            background: rgba(10,12,15,0.98);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 2px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .top-logo span { color: var(--accent); }
+
+        .top-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--accent);
+            background: rgba(240,165,0,0.1);
+            border: 1px solid rgba(240,165,0,0.2);
+            padding: 4px 10px;
+            border-radius: 2px;
+        }
+
+        .main {
+            padding: 72px 0 100px;
+            min-height: 100dvh;
+        }
+
+        /* STEP SYSTEM */
+        .step {
+            display: none;
+            padding: 24px 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* STEP 1: CAPTURE */
+        .capture-hero {
+            text-align: center;
+            padding: 20px 0 32px;
+        }
+
+        .capture-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .capture-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px;
+            letter-spacing: 2px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .capture-sub {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .capture-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .capture-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 28px 16px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+        }
+
+        .capture-btn:active {
+            background: var(--surface2);
+            border-color: var(--accent);
+            transform: scale(0.97);
+        }
+
+        .capture-btn-icon { font-size: 32px; }
+
+        .capture-btn-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .capture-btn-sub {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .capture-btn.primary {
+            border-color: var(--accent);
+            background: rgba(240,165,0,0.06);
+        }
+
+        /* Hidden file inputs */
+        #cameraInput, #galleryInput { display: none; }
+
+        /* STEP 2: PREVIEW + SCALE */
+        .photo-preview-wrap {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            touch-action: none;
+        }
+
+        #photoPreview {
+            width: 100%;
+            display: block;
+            max-height: 50vh;
+            object-fit: contain;
+        }
+
+        .scale-overlay {
+            position: absolute;
+            inset: 0;
+            cursor: crosshair;
+        }
+
+        .scale-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(240,165,0,0.6);
+        }
+
+        .scale-line {
+            position: absolute;
+            background: var(--accent);
+            height: 2px;
+            transform-origin: left center;
+            pointer-events: none;
+            box-shadow: 0 0 6px rgba(240,165,0,0.4);
+        }
+
+        .scale-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .scale-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .scale-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .scale-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .scale-step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .scale-step-num {
+            width: 28px;
+            height: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .scale-step-item.done .scale-step-num {
+            background: rgba(34,197,94,0.1);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .scale-step-item.active .scale-step-num {
+            background: rgba(240,165,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .scale-distance-input {
+            display: none;
+            margin-top: 16px;
+            gap: 10px;
+        }
+
+        .scale-distance-input.visible {
+            display: flex;
+        }
+
+        .scale-distance-input input {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .scale-distance-input select {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .scale-status {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--green);
+            margin-top: 12px;
+            display: none;
+        }
+
+        .scale-status.visible { display: block; }
+
+        /* Vertical add-on */
+        .vertical-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .vertical-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .vertical-row input {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .vertical-row input:focus { border-color: var(--accent); }
+
+        .vertical-label {
+            font-size: 14px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        /* Question */
+        .question-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-section textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            border-radius: 4px;
+            outline: none;
+            resize: none;
+            height: 80px;
+            margin-top: 12px;
+            line-height: 1.5;
+        }
+
+        .question-section textarea:focus { border-color: var(--accent); }
+
+        /* Quick prompts */
+        .quick-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-prompt {
+            font-size: 12px;
+            padding: 6px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .quick-prompt:active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* STEP 3: RESULTS */
+        .result-photo {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-height: 30vh;
+            object-fit: cover;
+        }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .result-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card-icon { font-size: 18px; }
+
+        .result-card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .result-card-body {
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .result-card-body.mono {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+        }
+
+        .material-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+
+        .material-row:last-child { border-bottom: none; }
+
+        .material-name { font-size: 14px; flex: 1; }
+
+        .material-qty {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        .supplier-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .supplier-row:last-child { border-bottom: none; }
+
+        .supplier-name { font-weight: 600; font-size: 14px; }
+        .supplier-dist { font-size: 13px; color: var(--muted); }
+        .supplier-link {
+            font-size: 12px;
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Bottom action bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 12px 20px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            background: rgba(10,12,15,0.98);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-full {
+            width: 100%;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-full:active { transform: scale(0.98); background: #d49300; }
+        .btn-full:disabled { opacity: 0.4; }
+
+        .btn-full.secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(240,165,0,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .loading-sub {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .loading-phases {
+            margin-top: 24px;
+            text-align: left;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .loading-phase {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .loading-phase:last-child { border-bottom: none; }
+        .loading-phase.active { color: var(--accent); }
+        .loading-phase.done { color: var(--green); }
+
+        .phase-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .loading-phase.active .phase-dot { background: var(--accent); animation: pulse 1s infinite; }
+        .loading-phase.done .phase-dot { background: var(--green); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Cost badge */
+        .cost-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: var(--green);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .error-box {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--red);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        /* Desktop hint */
+        @media (min-width: 768px) {
+            .main { max-width: 480px; margin: 0 auto; }
+            .bottom-bar { max-width: 480px; left: 50%; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="/" class="top-logo">FIELDWISE<span> AI</span></a>
+        <div class="top-badge">FIELD TOOL</div>
+    </div>
+
+    <div class="main">
+
+        <!-- STEP 1: CAPTURE -->
+        <div class="step active" id="step1">
+            <div class="capture-hero">
+                <span class="capture-icon">📸</span>
+                <div class="capture-title">FIELD PHOTO TOOL</div>
+                <p class="capture-sub">Point your phone at any equipment or installation. Get instant materials, labor, and supplier info.</p>
+            </div>
+
+            <input type="file" id="cameraInput" accept="image/*" capture="environment">
+            <input type="file" id="galleryInput" accept="image/*">
+
+            <div class="capture-actions">
+                <div class="capture-btn primary" onclick="document.getElementById('cameraInput').click()">
+                    <span class="capture-btn-icon">📷</span>
+                    <span class="capture-btn-label">TAKE PHOTO</span>
+                    <span class="capture-btn-sub">Use camera</span>
+                </div>
+                <div class="capture-btn" onclick="document.getElementById('galleryInput').click()">
+                    <span class="capture-btn-icon">🖼️</span>
+                    <span class="capture-btn-label">UPLOAD</span>
+                    <span class="capture-btn-sub">From gallery</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 32px;">
+                <div class="section-label">// What can I analyze?</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted);">
+                        <span>⚡</span> Panels, switchboards, breakers
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted);">
+                        <span>🔧</span> Mechanical equipment, valves, fixtures
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted);">
+                        <span>🏗️</span> Renovation areas, demo scope
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted);">
+                        <span>📏</span> Any installation needing material list
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: CONFIGURE -->
+        <div class="step" id="step2">
+            <div class="photo-preview-wrap" id="previewWrap">
+                <img id="photoPreview" src="" alt="Preview">
+                <canvas class="scale-overlay" id="scaleCanvas"></canvas>
+            </div>
+
+            <!-- Scale calibration -->
+            <div class="scale-section">
+                <div class="scale-title">📏 SET SCALE <span style="font-size:13px;font-weight:400;color:var(--muted);letter-spacing:0">(optional)</span></div>
+                <div class="scale-sub">Tap two points on the photo to measure distances accurately.</div>
+
+                <div class="scale-steps">
+                    <div class="scale-step-item" id="scaleStep1">
+                        <div class="scale-step-num">1</div>
+                        <span>Tap your first reference point</span>
+                    </div>
+                    <div class="scale-step-item" id="scaleStep2">
+                        <div class="scale-step-num">2</div>
+                        <span>Tap your second reference point</span>
+                    </div>
+                    <div class="scale-step-item" id="scaleStep3">
+                        <div class="scale-step-num">3</div>
+                        <span>Enter the real-world distance</span>
+                    </div>
+                </div>
+
+                <div class="scale-distance-input" id="distanceInput">
+                    <input type="number" id="distanceValue" placeholder="20" inputmode="decimal">
+                    <select id="distanceUnit">
+                        <option value="ft">ft</option>
+                        <option value="in">in</option>
+                        <option value="m">m</option>
+                    </select>
+                </div>
+
+                <div class="scale-status" id="scaleStatus">✓ Scale set — distances will be calculated</div>
+
+                <button style="margin-top:12px;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:4px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="resetScale()">Reset Scale</button>
+            </div>
+
+            <!-- Vertical runs -->
+            <div class="vertical-section">
+                <div class="scale-title">⬆️ VERTICAL RUNS</div>
+                <div class="scale-sub">Add footage to each run for vertical drops not shown in photos.</div>
+                <div class="vertical-row">
+                    <input type="number" id="verticalAdd" placeholder="0" inputmode="decimal" min="0">
+                    <span class="vertical-label">ft per run</span>
+                </div>
+            </div>
+
+            <!-- Question -->
+            <div class="question-section">
+                <div class="scale-title">💬 WHAT DO YOU NEED?</div>
+                <textarea id="userQuestion" placeholder="e.g. I'm replacing this panel, what materials and labor do I need?"></textarea>
+                <div class="quick-prompts">
+                    <div class="quick-prompt" onclick="setQuestion('What materials do I need to replace this?')">Replace this</div>
+                    <div class="quick-prompt" onclick="setQuestion('Give me a full material list with quantities')">Material list</div>
+                    <div class="quick-prompt" onclick="setQuestion('How many labor hours to install this?')">Labor hours</div>
+                    <div class="quick-prompt" onclick="setQuestion('What code violations do you see?')">Code check</div>
+                    <div class="quick-prompt" onclick="setQuestion('What brand/model is this equipment?')">Identify equipment</div>
+                </div>
+            </div>
+
+            <div class="error-box" id="errorBox2"></div>
+        </div>
+
+        <!-- STEP 3: LOADING -->
+        <div class="step" id="step3">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <div class="loading-title">ANALYZING PHOTO</div>
+                <div class="loading-sub">Claude is reading your photo...</div>
+                <div class="loading-phases">
+                    <div class="loading-phase active" id="lp1">
+                        <div class="phase-dot"></div>
+                        Identifying equipment
+                    </div>
+                    <div class="loading-phase" id="lp2">
+                        <div class="phase-dot"></div>
+                        Calculating materials
+                    </div>
+                    <div class="loading-phase" id="lp3">
+                        <div class="phase-dot"></div>
+                        Estimating labor
+                    </div>
+                    <div class="loading-phase" id="lp4">
+                        <div class="phase-dot"></div>
+                        Finding suppliers
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: RESULTS -->
+        <div class="step" id="step4">
+            <img id="resultPhoto" class="result-photo" src="" alt="">
+
+            <div class="error-box" id="errorBox4"></div>
+
+            <!-- What AI identified -->
+            <div class="result-card" id="identificationCard">
+                <div class="result-card-header">
+                    <span class="result-card-icon">🔍</span>
+                    <span class="result-card-title">WHAT I SEE</span>
+                </div>
+                <div class="result-card-body" id="identificationText"></div>
+            </div>
+
+            <!-- Materials -->
+            <div class="result-card" id="materialsCard">
+                <div class="result-card-header">
+                    <span class="result-card-icon">📦</span>
+                    <span class="result-card-title">MATERIALS NEEDED</span>
+                </div>
+                <div class="result-card-body" id="materialsList"></div>
+            </div>
+
+            <!-- Labor -->
+            <div class="result-card" id="laborCard">
+                <div class="result-card-header">
+                    <span class="result-card-icon">⏱️</span>
+                    <span class="result-card-title">LABOR ESTIMATE</span>
+                </div>
+                <div class="result-card-body" id="laborText"></div>
+            </div>
+
+            <!-- Cost -->
+            <div class="result-card" id="costCard">
+                <div class="result-card-header">
+                    <span class="result-card-icon">💰</span>
+                    <span class="result-card-title">ESTIMATED COST</span>
+                </div>
+                <div class="result-card-body" id="costText"></div>
+            </div>
+
+            <!-- Suppliers -->
+            <div class="result-card" id="suppliersCard">
+                <div class="result-card-header">
+                    <span class="result-card-icon">🏪</span>
+                    <span class="result-card-title">NEARBY SUPPLIERS</span>
+                </div>
+                <div class="result-card-body" id="suppliersList"></div>
+            </div>
+
+            <div style="height: 20px;"></div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar" id="bottomBar">
+        <button class="btn-full" id="mainBtn" onclick="handleMainBtn()">
+            NEXT →
+        </button>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let photoFile = null;
+        let photoDataUrl = null;
+        let scalePoints = [];
+        let pixelsPerFoot = null;
+        let scaleSet = false;
+
+        // File input handlers
+        document.getElementById('cameraInput').addEventListener('change', handlePhoto);
+        document.getElementById('galleryInput').addEventListener('change', handlePhoto);
+
+        function handlePhoto(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            photoFile = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                photoDataUrl = ev.target.result;
+                document.getElementById('photoPreview').src = photoDataUrl;
+                document.getElementById('resultPhoto').src = photoDataUrl;
+                goToStep(2);
+                setupScaleCanvas();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Scale canvas setup
+        function setupScaleCanvas() {
+            const canvas = document.getElementById('scaleCanvas');
+            const img = document.getElementById('photoPreview');
+
+            setTimeout(() => {
+                canvas.width = img.offsetWidth;
+                canvas.height = img.offsetHeight;
+            }, 100);
+
+            canvas.addEventListener('click', handleScaleTap);
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                const rect = canvas.getBoundingClientRect();
+                handleScaleTap({ clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => {} });
+            }, { passive: false });
+        }
+
+        function handleScaleTap(e) {
+            if (scalePoints.length >= 2) return;
+            const canvas = document.getElementById('scaleCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            scalePoints.push({ x, y });
+            drawScalePoints();
+
+            if (scalePoints.length === 1) {
+                document.getElementById('scaleStep1').className = 'scale-step-item done';
+                document.getElementById('scaleStep2').className = 'scale-step-item active';
+            } else if (scalePoints.length === 2) {
+                document.getElementById('scaleStep2').className = 'scale-step-item done';
+                document.getElementById('scaleStep3').className = 'scale-step-item active';
+                document.getElementById('distanceInput').className = 'scale-distance-input visible';
+                document.getElementById('distanceValue').focus();
+            }
+        }
+
+        function drawScalePoints() {
+            const canvas = document.getElementById('scaleCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            scalePoints.forEach((pt, i) => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#f0a500';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, pt.x, pt.y);
+            });
+
+            if (scalePoints.length === 2) {
+                ctx.beginPath();
+                ctx.moveTo(scalePoints[0].x, scalePoints[0].y);
+                ctx.lineTo(scalePoints[1].x, scalePoints[1].y);
+                ctx.strokeStyle = '#f0a500';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        document.getElementById('distanceValue').addEventListener('change', computeScale);
+        document.getElementById('distanceUnit').addEventListener('change', computeScale);
+
+        function computeScale() {
+            const val = parseFloat(document.getElementById('distanceValue').value);
+            const unit = document.getElementById('distanceUnit').value;
+            if (!val || scalePoints.length < 2) return;
+
+            let feet = val;
+            if (unit === 'in') feet = val / 12;
+            if (unit === 'm') feet = val * 3.28084;
+
+            const dx = scalePoints[1].x - scalePoints[0].x;
+            const dy = scalePoints[1].y - scalePoints[0].y;
+            const pixels = Math.sqrt(dx * dx + dy * dy);
+
+            pixelsPerFoot = pixels / feet;
+            scaleSet = true;
+
+            document.getElementById('scaleStep3').className = 'scale-step-item done';
+            document.getElementById('scaleStatus').className = 'scale-status visible';
+        }
+
+        function resetScale() {
+            scalePoints = [];
+            pixelsPerFoot = null;
+            scaleSet = false;
+            const canvas = document.getElementById('scaleCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('scaleStep1').className = 'scale-step-item active';
+            document.getElementById('scaleStep2').className = 'scale-step-item';
+            document.getElementById('scaleStep3').className = 'scale-step-item';
+            document.getElementById('distanceInput').className = 'scale-distance-input';
+            document.getElementById('distanceValue').value = '';
+            document.getElementById('scaleStatus').className = 'scale-status';
+        }
+
+        function setQuestion(q) {
+            document.getElementById('userQuestion').value = q;
+        }
+
+        // Step navigation
+        function goToStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
+            currentStep = n;
+            updateBottomBar();
+            window.scrollTo(0, 0);
+        }
+
+        function updateBottomBar() {
+            const btn = document.getElementById('mainBtn');
+            if (currentStep === 1) {
+                btn.textContent = 'SELECT PHOTO FIRST';
+                btn.disabled = true;
+            } else if (currentStep === 2) {
+                btn.textContent = 'ANALYZE PHOTO →';
+                btn.disabled = false;
+            } else if (currentStep === 3) {
+                btn.textContent = 'ANALYZING...';
+                btn.disabled = true;
+            } else if (currentStep === 4) {
+                btn.textContent = '+ NEW PHOTO';
+                btn.disabled = false;
+            }
+        }
+
+        function handleMainBtn() {
+            if (currentStep === 2) analyzePhoto();
+            else if (currentStep === 4) resetAll();
+        }
+
+        async function analyzePhoto() {
+            const question = document.getElementById('userQuestion').value ||
+                'What is this equipment? Give me a material list, labor estimate, and cost range.';
+            const verticalAdd = parseFloat(document.getElementById('verticalAdd').value) || 0;
+
+            goToStep(3);
+            animateLoadingPhases();
+
+            try {
+                const token = localStorage.getItem('fieldwise_token');
+                const formData = new FormData();
+                formData.append('file', photoFile);
+                formData.append('question', question);
+                formData.append('vertical_add', verticalAdd);
+                if (scaleSet && pixelsPerFoot) {
+                    formData.append('pixels_per_foot', pixelsPerFoot);
+                }
+
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch('/api/analyze-photo', {
+                    method: 'POST',
+                    headers,
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error || 'Analysis failed');
+
+                displayResults(data);
+                goToStep(4);
+
+            } catch (e) {
+                goToStep(4);
+                document.getElementById('errorBox4').textContent = 'Error: ' + e.message;
+                document.getElementById('errorBox4').style.display = 'block';
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('identificationText').textContent = data.identification || '';
+            document.getElementById('laborText').textContent = data.labor || '';
+            document.getElementById('costText').innerHTML = data.cost_range ?
+                `<div class="cost-badge">💰 ${data.cost_range}</div><br><small style="color:var(--muted)">Rough estimate — verify with current pricing</small>` : '';
+
+            // Materials
+            const matList = document.getElementById('materialsList');
+            if (data.materials && data.materials.length) {
+                matList.innerHTML = data.materials.map(m => `
+                    <div class="material-row">
+                        <span class="material-name">${m.item}</span>
+                        <span class="material-qty">${m.qty} ${m.unit || ''}</span>
+                    </div>`).join('');
+            } else {
+                matList.textContent = data.materials_text || 'No materials identified';
+            }
+
+            // Suppliers
+            const supList = document.getElementById('suppliersList');
+            supList.innerHTML = `
+                <div class="supplier-row">
+                    <div><div class="supplier-name">Graybar Electric</div><div class="supplier-dist">Electrical distributor</div></div>
+                    <a class="supplier-link" href="https://www.graybar.com" target="_blank">OPEN →</a>
+                </div>
+                <div class="supplier-row">
+                    <div><div class="supplier-name">Rexel</div><div class="supplier-dist">Electrical distributor</div></div>
+                    <a class="supplier-link" href="https://www.rexelusa.com" target="_blank">OPEN →</a>
+                </div>
+                <div class="supplier-row">
+                    <div><div class="supplier-name">Wesco</div><div class="supplier-dist">Industrial distributor</div></div>
+                    <a class="supplier-link" href="https://www.wesco.com" target="_blank">OPEN →</a>
+                </div>
+                <div class="supplier-row">
+                    <div><div class="supplier-name">Home Depot Pro</div><div class="supplier-dist">General contractor supply</div></div>
+                    <a class="supplier-link" href="https://www.homedepot.com" target="_blank">OPEN →</a>
+                </div>`;
+        }
+
+        function resetAll() {
+            photoFile = null;
+            photoDataUrl = null;
+            scalePoints = [];
+            pixelsPerFoot = null;
+            scaleSet = false;
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('galleryInput').value = '';
+            document.getElementById('userQuestion').value = '';
+            document.getElementById('verticalAdd').value = '';
+            document.getElementById('errorBox4').style.display = 'none';
+            resetScale();
+            goToStep(1);
+        }
+
+        let loadingInterval;
+        function animateLoadingPhases() {
+            const phases = ['lp1', 'lp2', 'lp3', 'lp4'];
+            let i = 0;
+            phases.forEach(p => document.getElementById(p).className = 'loading-phase');
+            document.getElementById(phases[0]).className = 'loading-phase active';
+
+            loadingInterval = setInterval(() => {
+                if (i < phases.length - 1) {
+                    document.getElementById(phases[i]).className = 'loading-phase done';
+                    i++;
+                    document.getElementById(phases[i]).className = 'loading-phase active';
+                } else {
+                    clearInterval(loadingInterval);
+                }
+            }, 4000);
+        }
+
+        updateBottomBar();
+    </script>
+</body>
+</html>

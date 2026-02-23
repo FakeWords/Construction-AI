@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Analyzer — Fieldwise AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --surface: #111418;
+            --surface2: #181d24;
+            --border: #1e2530;
+            --accent: #f0a500;
+            --text: #e8eaed;
+            --muted: #6b7280;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            background: rgba(10,12,15,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 28px; height: 28px;
+            background: var(--accent);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .nav-logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px; letter-spacing: 2px; color: var(--text);
+        }
+        .nav-logo-text span { color: var(--accent); }
+        .nav-links {
+            display: flex; align-items: center; gap: 24px; list-style: none;
+        }
+        .nav-links a {
+            color: var(--muted); text-decoration: none;
+            font-size: 14px; font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .nav-right {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .nav-user {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px; color: var(--muted);
+        }
+        .btn-nav {
+            font-size: 13px; padding: 7px 16px;
+            border-radius: 2px; cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500; text-decoration: none;
+        }
+        .btn-login {
+            color: var(--muted); border: 1px solid var(--border);
+            background: none; transition: all 0.2s;
+        }
+        .btn-login:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-signup {
+            background: var(--accent); color: #000; border: none;
+        }
+
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; letter-spacing: 3px;
+            color: var(--accent); text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 56px; letter-spacing: 2px; line-height: 1;
+            margin-bottom: 8px;
+        }
+        .page-sub {
+            color: var(--muted); font-size: 15px;
+            margin-bottom: 48px;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 1.5px dashed var(--border);
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--accent);
+            background: rgba(240,165,0,0.03);
+        }
+        .upload-zone input {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer; width: 100%;
+        }
+        .upload-icon { font-size: 40px; margin-bottom: 12px; }
+        .upload-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px; letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .upload-sub { color: var(--muted); font-size: 14px; }
+        .upload-file-name {
+            margin-top: 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px; color: var(--green);
+            display: none;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group.full { grid-column: 1 / -1; }
+        label {
+            display: block;
+            font-size: 12px; font-weight: 500;
+            color: var(--muted); text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            border-radius: 2px;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+        }
+        select { cursor: pointer; }
+        select:focus, input[type="text"]:focus { border-color: var(--accent); }
+
+        select option { background: var(--surface2); }
+
+        .btn-analyze {
+            width: 100%;
+            background: var(--accent); color: #000;
+            border: none; padding: 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px; font-weight: 700;
+            cursor: pointer; border-radius: 2px;
+            transition: background 0.2s; margin-top: 8px;
+        }
+        .btn-analyze:hover { background: #d49300; }
+        .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Progress */
+        .progress {
+            display: none;
+            margin-top: 32px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 32px;
+        }
+        .progress-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px; letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .phase {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px; color: var(--muted);
+        }
+        .phase:last-child { border-bottom: none; }
+        .phase-icon { font-size: 16px; width: 24px; text-align: center; }
+        .phase.active { color: var(--accent); }
+        .phase.done { color: var(--green); }
+        .phase-spinner {
+            width: 14px; height: 14px;
+            border: 2px solid rgba(240,165,0,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        .phase.active .phase-spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 32px;
+        }
+        .results-header {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .results-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px; letter-spacing: 1px;
+        }
+        .btn-download {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--green); color: #000;
+            padding: 10px 20px; border-radius: 2px;
+            font-weight: 600; font-size: 14px;
+            text-decoration: none; cursor: pointer;
+            border: none; font-family: 'DM Sans', sans-serif;
+        }
+        .analysis-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 32px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px; line-height: 1.8;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .save-notice {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: var(--green);
+            font-size: 13px;
+            display: none;
+        }
+        .login-notice {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(240,165,0,0.08);
+            border: 1px solid rgba(240,165,0,0.2);
+            color: var(--accent);
+            font-size: 13px;
+            display: none;
+        }
+        .login-notice a { color: var(--accent); }
+        .error-box {
+            display: none;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--red);
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-icon"></div>
+            <span class="nav-logo-text">FIELDWISE<span> AI</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/drawings" class="active">Drawing Analyzer</a></li>
+            <li><a href="/timecards">Time Cards</a></li>
+            <li><a href="/projects">Projects</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <!-- populated by JS -->
+        </div>
+    </nav>
+
+    <div class="main">
+        <div class="page-label">// AI-Powered Takeoff</div>
+        <div class="page-title">DRAWING ANALYZER</div>
+        <p class="page-sub">Upload any construction drawing for automated material takeoff and code validation.</p>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.pdf" onchange="handleFileSelect(this)">
+            <div class="upload-icon">📐</div>
+            <div class="upload-title">DROP DRAWING HERE</div>
+            <div class="upload-sub">PNG, JPG, or PDF — any trade, any format</div>
+            <div class="upload-file-name" id="fileName"></div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Trade</label>
+                <select id="trade">
+                    <option value="electrical">⚡ Electrical</option>
+                    <option value="mechanical">🌬️ Mechanical / HVAC</option>
+                    <option value="plumbing">🔧 Plumbing</option>
+                    <option value="fire_protection">🔥 Fire Protection</option>
+                    <option value="electrical_controls">🎛️ Electrical Controls</option>
+                    <option value="architectural">🏗️ Architectural</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Code Book</label>
+                <select id="codeBook">
+                    <optgroup label="Electrical">
+                        <option value="NEC_2023">NEC 2023</option>
+                        <option value="NEC_2020">NEC 2020</option>
+                        <option value="NEC_2017">NEC 2017</option>
+                        <option value="NFPA_70E">NFPA 70E (Electrical Safety)</option>
+                    </optgroup>
+                    <optgroup label="Mechanical">
+                        <option value="IMC_2021">IMC 2021</option>
+                        <option value="SMACNA">SMACNA</option>
+                    </optgroup>
+                    <optgroup label="Plumbing">
+                        <option value="UPC_2021">UPC 2021</option>
+                        <option value="IPC_2021">IPC 2021</option>
+                    </optgroup>
+                    <optgroup label="Fire Protection">
+                        <option value="NFPA_13">NFPA 13 (Sprinklers)</option>
+                        <option value="NFPA_72">NFPA 72 (Fire Alarm)</option>
+                    </optgroup>
+                    <optgroup label="Building">
+                        <option value="IBC_2021">IBC 2021 (Building Code)</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group full">
+                <label>Project Name</label>
+                <input type="text" id="projectName" placeholder="e.g. Tesla Gigafactory — Phase 3 Electrical">
+            </div>
+        </div>
+
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyzeDrawing()">
+            ⚡ Analyze Drawing
+        </button>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <!-- Progress -->
+        <div class="progress" id="progress">
+            <div class="progress-title">ANALYZING DRAWING...</div>
+            <div class="phase" id="phase1">
+                <div class="phase-icon">🔍</div>
+                <span>Phase 1: Structure Detection (OpenCV)</span>
+                <div class="phase-spinner"></div>
+            </div>
+            <div class="phase" id="phase2">
+                <div class="phase-icon">☁️</div>
+                <span>Phase 2: Text Extraction (Google Vision)</span>
+                <div class="phase-spinner"></div>
+            </div>
+            <div class="phase" id="phase3">
+                <div class="phase-icon">🔗</div>
+                <span>Phase 3: Matching Text to Structure</span>
+                <div class="phase-spinner"></div>
+            </div>
+            <div class="phase" id="phase4">
+                <div class="phase-icon">🤖</div>
+                <span>Phase 4: Claude AI Analysis & Validation</span>
+                <div class="phase-spinner"></div>
+            </div>
+            <div class="phase" id="phase5">
+                <div class="phase-icon">📊</div>
+                <span>Phase 5: Excel Export</span>
+                <div class="phase-spinner"></div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+            <div class="results-header">
+                <div class="results-title">ANALYSIS COMPLETE</div>
+                <button class="btn-download" id="downloadBtn" onclick="downloadExcel()">
+                    📥 Download Excel Takeoff
+                </button>
+            </div>
+            <div class="analysis-box" id="analysisText"></div>
+            <div class="save-notice" id="saveNotice">✓ Project saved to your account.</div>
+            <div class="login-notice" id="loginNotice">
+                💡 <a href="/login">Sign in</a> or <a href="/signup">create an account</a> to save this analysis to your projects.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('fieldwise_token');
+        const user = JSON.parse(localStorage.getItem('fieldwise_user') || 'null');
+        let currentExcelFile = null;
+
+        // Nav auth state
+        const navRight = document.getElementById('navRight');
+        if (user) {
+            navRight.innerHTML = `
+                <span class="nav-user">${user.name}</span>
+                <a href="/projects" class="btn-nav btn-login">My Projects</a>`;
+        } else {
+            navRight.innerHTML = `
+                <a href="/login" class="btn-nav btn-login">Sign In</a>
+                <a href="/signup" class="btn-nav btn-signup">Get Started</a>`;
+        }
+
+        // Drag and drop
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) setFile(file);
+        });
+
+        function handleFileSelect(input) {
+            if (input.files[0]) setFile(input.files[0]);
+        }
+
+        function setFile(file) {
+            const fn = document.getElementById('fileName');
+            fn.textContent = '✓ ' + file.name;
+            fn.style.display = 'block';
+        }
+
+        async function analyzeDrawing() {
+            const fileInput = document.getElementById('fileInput');
+            const trade = document.getElementById('trade').value;
+            const codeBook = document.getElementById('codeBook').value;
+            const projectName = document.getElementById('projectName').value || 'Untitled Project';
+            const btn = document.getElementById('analyzeBtn');
+            const errorBox = document.getElementById('errorBox');
+
+            errorBox.style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+
+            if (!fileInput.files[0]) {
+                errorBox.textContent = 'Please select a drawing file first.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            document.getElementById('progress').style.display = 'block';
+
+            // Animate phases
+            animatePhases();
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('trade', trade);
+            formData.append('code_book', codeBook);
+            formData.append('project_name', projectName);
+
+            const headers = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const res = await fetch('/api/analyze-drawing', {
+                    method: 'POST',
+                    headers,
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+
+                // Show results
+                completePhases();
+                document.getElementById('analysisText').textContent = data.analysis;
+                currentExcelFile = data.excel_file;
+                document.getElementById('results').style.display = 'block';
+
+                if (data.project_id) {
+                    document.getElementById('saveNotice').style.display = 'block';
+                } else {
+                    document.getElementById('loginNotice').style.display = 'block';
+                }
+
+            } catch (e) {
+                document.getElementById('progress').style.display = 'none';
+                errorBox.textContent = 'Error: ' + e.message;
+                errorBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '⚡ Analyze Drawing';
+            }
+        }
+
+        function downloadExcel() {
+            if (currentExcelFile) {
+                window.location.href = `/api/download-excel/${currentExcelFile}`;
+            }
+        }
+
+        let phaseInterval;
+        let currentPhase = 0;
+
+        function animatePhases() {
+            currentPhase = 0;
+            const phases = ['phase1','phase2','phase3','phase4','phase5'];
+            phases.forEach(p => {
+                document.getElementById(p).className = 'phase';
+            });
+            activatePhase(0);
+            phaseInterval = setInterval(() => {
+                if (currentPhase < phases.length - 1) {
+                    document.getElementById(phases[currentPhase]).className = 'phase done';
+                    currentPhase++;
+                    activatePhase(currentPhase);
+                }
+            }, 18000);
+        }
+
+        function activatePhase(idx) {
+            const phases = ['phase1','phase2','phase3','phase4','phase5'];
+            document.getElementById(phases[idx]).className = 'phase active';
+        }
+
+        function completePhases() {
+            clearInterval(phaseInterval);
+            const phases = ['phase1','phase2','phase3','phase4','phase5'];
+            phases.forEach(p => {
+                document.getElementById(p).className = 'phase done';
+            });
+        }
+    </script>
+</body>
+</html>

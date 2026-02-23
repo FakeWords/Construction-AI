@@ -12,3 +12,7 @@ numpy==1.26.3
 
 # Excel export for time cards
 openpyxl==3.1.2
+psycopg2-binary
+bcrypt
+PyJWT
+anthropic

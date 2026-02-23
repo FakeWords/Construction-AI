@@ -4,8 +4,14 @@ JWT token management and password hashing
 """
 
 import os
-import bcrypt
-import jwt
+try:
+    import bcrypt
+except ImportError:
+    bcrypt = None
+try:
+    import jwt
+except ImportError:
+    jwt = None
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request
 from database import get_user_by_id

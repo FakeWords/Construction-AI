@@ -17,3 +17,5 @@ bcrypt
 PyJWT
 anthropic
 rich
+opencv-python-headless
+google-cloud-vision

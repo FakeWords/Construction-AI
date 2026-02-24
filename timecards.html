@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Card Scanner — Fieldwise AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --surface: #111418;
+            --surface2: #181d24;
+            --border: #1e2530;
+            --accent: #f0a500;
+            --accent2: #e05c2a;
+            --text: #e8eaed;
+            --muted: #6b7280;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            background: rgba(10,12,15,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo-icon {
+            width: 32px; height: 32px;
+            background: var(--accent);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .nav-logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 2px;
+            color: var(--text);
+        }
+
+        .nav-logo-text span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .nav-links a.active { color: var(--accent); }
+
+        .main {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+        }
+
+        .page-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 56px;
+            letter-spacing: 2px;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 48px;
+            font-weight: 300;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--surface);
+            margin-bottom: 32px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(240,165,0,0.05);
+        }
+
+        .upload-icon { font-size: 48px; margin-bottom: 16px; }
+
+        .upload-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .upload-sub {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .btn-upload {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #000;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .btn-upload:hover { background: #d49300; }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .file-item-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+        }
+
+        .file-remove {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .file-remove:hover { color: var(--red); }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 32px;
+        }
+
+        .btn-analyze:hover { background: #d49300; }
+        .btn-analyze:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 48px; height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 16px;
+        }
+
+        .result-card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--surface2); }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--green);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: opacity 0.2s;
+            margin-top: 16px;
+        }
+
+        .btn-download:hover { opacity: 0.85; }
+
+        .error-box {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--red);
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .info-cell {
+            background: var(--surface);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .info-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-icon"></div>
+            <span class="nav-logo-text">FIELDWISE<span> AI</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/drawings">Drawing Analyzer</a></li>
+            <li><a href="/timecards" class="active">Time Cards</a></li>
+            <li><a href="/field">Field Tool</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/login">Login</a></li>
+        </ul>
+    </nav>
+
+    <div class="main">
+        <div class="page-label">// Time Card Scanner</div>
+        <div class="page-title">TIMECARD PROCESSOR</div>
+        <p class="page-sub">Upload field time cards — AI extracts worker names, hours, and cost codes. Exports clean Excel with FTE and contractor sheets.</p>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">🕐</div>
+            <div class="upload-title">DROP TIME CARDS HERE</div>
+            <p class="upload-sub">PDF or image files • Multiple files supported</p>
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                📎 Select Files
+            </button>
+            <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg" style="display:none">
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <button class="btn-analyze" id="analyzeBtn" onclick="processTimecards()" disabled>
+            ⚡ PROCESS TIME CARDS → EXCEL
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div class="loading-text">EXTRACTING TIME ENTRIES...</div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="info-grid" id="infoGrid"></div>
+            <div id="downloadSection"></div>
+            <div id="errorBox"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        uploadZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            addFiles([...e.dataTransfer.files]);
+        });
+
+        fileInput.addEventListener('change', () => addFiles([...fileInput.files]));
+
+        function addFiles(files) {
+            files.forEach(f => {
+                if (!selectedFiles.find(x => x.name === f.name)) {
+                    selectedFiles.push(f);
+                }
+            });
+            renderFileList();
+        }
+
+        function removeFile(name) {
+            selectedFiles = selectedFiles.filter(f => f.name !== name);
+            renderFileList();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = selectedFiles.map(f => `
+                <div class="file-item">
+                    <div class="file-item-name">🕐 ${f.name}</div>
+                    <button class="file-remove" onclick="removeFile('${f.name}')">✕</button>
+                </div>
+            `).join('');
+            analyzeBtn.disabled = selectedFiles.length === 0;
+        }
+
+        async function processTimecards() {
+            if (selectedFiles.length === 0) return;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            analyzeBtn.disabled = true;
+
+            const formData = new FormData();
+            selectedFiles.forEach(f => formData.append('files', f));
+
+            try {
+                const response = await fetch('/process-timecards', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const filename = `timecards_${new Date().toISOString().slice(0,10)}.xlsx`;
+
+                    document.getElementById('infoGrid').innerHTML = `
+                        <div class="info-cell">
+                            <div class="info-num">${selectedFiles.length}</div>
+                            <div class="info-label">Files Processed</div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-num">✓</div>
+                            <div class="info-label">Excel Generated</div>
+                        </div>
+                        <div class="info-cell">
+                            <div class="info-num">2</div>
+                            <div class="info-label">Sheets (FTE + Contractor)</div>
+                        </div>
+                    `;
+
+                    document.getElementById('downloadSection').innerHTML = `
+                        <div class="result-card">
+                            <div class="result-card-title">✅ PROCESSING COMPLETE</div>
+                            <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">
+                                Your Excel file has been generated with FTE and Contractor sheets.
+                            </p>
+                            <a href="${url}" download="${filename}" class="btn-download">
+                                📥 Download Excel Report
+                            </a>
+                        </div>
+                    `;
+                    document.getElementById('errorBox').innerHTML = '';
+                } else {
+                    const data = await response.json();
+                    document.getElementById('errorBox').innerHTML = `
+                        <div class="error-box">❌ Error: ${data.detail || 'Processing failed'}</div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('errorBox').innerHTML = `
+                    <div class="error-box">❌ Error: ${err.message}</div>
+                `;
+            }
+
+            analyzeBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>

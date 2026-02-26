@@ -1017,7 +1017,30 @@
             if (currentStep === 2) analyzePhoto();
             else if (currentStep === 4) resetAll();
         }
-
+async function compressImage(file, maxMB) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                const maxPx = 2048;
+                if (w > maxPx || h > maxPx) {
+                    const ratio = Math.min(maxPx/w, maxPx/h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                canvas.toBlob(resolve, 'image/jpeg', 0.85);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
         async function analyzePhoto() {
             const question = document.getElementById('userQuestion').value ||
                 'What is this equipment? Give me a material list, labor estimate, and cost range.';
@@ -1028,8 +1051,9 @@
 
             try {
                 const token = localStorage.getItem('fieldwise_token');
-                const formData = new FormData();
-                formData.append('file', photoFile);
+            const compressedBlob = await compressImage(photoFile, 4);
+const formData = new FormData();
+formData.append('file', compressedBlob, photoFile.name);
                 formData.append('question', question);
                 formData.append('vertical_add', verticalAdd);
                 if (scaleSet && pixelsPerFoot) {

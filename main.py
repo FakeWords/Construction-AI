@@ -31,12 +31,18 @@ from timecard_excel import create_timecard_excel
 # Integrated drawing agent
 from integrated_agent import IntegratedDrawingAgent
 from excel_export import export_to_excel
+from fastapi import FastAPI
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 app = FastAPI(
     title="Fieldwise AI",
     description="AI-powered construction intelligence platform",
     version="2.0.0"
 )
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+app.state.max_upload_size = 100 * 1024 * 1024  # 100MB
 
 app.add_middleware(
     CORSMiddleware,

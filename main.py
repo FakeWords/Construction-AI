@@ -132,9 +132,24 @@ async def nearby_suppliers(lat: float, lng: float):
                     'address': place.get('vicinity', ''),
                     'distance': distance
                 })
-        return {"suppliers": suppliers}
-    except Exception as e:
-        return {"suppliers": [], "error": str(e)}
+   return {"suppliers": [], "error": str(e)}
+
+@app.post("/api/chat")
+async def chat_endpoint(request: Request):
+    import anthropic as ant
+    data = await request.json()
+    messages = data.get("messages", [])
+    system = data.get("system", "")
+    
+    client = ant.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1000,
+        system=system,
+        messages=messages
+    )
+    return {"content": response.content[0].text}
+
 @app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}

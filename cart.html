@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart — Fieldwise AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --surface: #111418;
+            --surface2: #181d24;
+            --border: #1e2530;
+            --accent: #f0a500;
+            --text: #e8eaed;
+            --muted: #6b7280;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            background: rgba(10,12,15,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo-icon {
+            width: 32px; height: 32px;
+            background: var(--accent);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .nav-logo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px; letter-spacing: 2px; color: var(--text);
+        }
+
+        .nav-logo-text span { color: var(--accent); }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 32px; list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--muted); text-decoration: none;
+            font-size: 14px; font-weight: 500; transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .nav-cta {
+            background: var(--accent);
+            color: #000 !important;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: 600 !important;
+        }
+
+        /* MAIN */
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 40px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; letter-spacing: 3px;
+            color: var(--accent); text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 48px; letter-spacing: 2px;
+            margin-bottom: 40px; line-height: 1;
+        }
+
+        /* LAYOUT */
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .cart-layout { grid-template-columns: 1fr; }
+            nav { padding: 0 20px; }
+            .main { padding: 90px 20px 60px; }
+        }
+
+        /* CART ITEMS */
+        .cart-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px; letter-spacing: 1px;
+        }
+
+        .clear-btn {
+            font-size: 12px;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: color 0.2s;
+        }
+
+        .clear-btn:hover { color: var(--red); }
+
+        .cart-items { padding: 0; }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item:hover { background: var(--surface2); }
+
+        .item-icon {
+            width: 44px; height: 44px;
+            background: rgba(240,165,0,0.1);
+            border: 1px solid rgba(240,165,0,0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .item-info { flex: 1; }
+
+        .item-name {
+            font-weight: 600; font-size: 15px;
+            margin-bottom: 3px;
+        }
+
+        .item-spec {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .item-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .item-qty {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qty-btn {
+            width: 28px; height: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .qty-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 14px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .item-remove {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .item-remove:hover { color: var(--red); }
+
+        /* EMPTY STATE */
+        .empty-state {
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+        .empty-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px; letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .empty-sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--accent); color: #000;
+            padding: 12px 24px; border-radius: 4px;
+            font-weight: 600; font-size: 14px;
+            text-decoration: none; transition: background 0.2s;
+            border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-primary:hover { background: #d49300; }
+
+        /* SIDEBAR */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+        /* LOCATION */
+        .location-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+        }
+
+        .location-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .location-icon { font-size: 20px; }
+
+        .location-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px; letter-spacing: 1px;
+        }
+
+        .location-status {
+            font-size: 13px; color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .btn-locate {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .btn-locate:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* SUPPLIERS */
+        .suppliers-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .supplier-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .supplier-item:last-child { border-bottom: none; }
+
+        .supplier-top {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .supplier-name { font-weight: 600; font-size: 15px; }
+
+        .supplier-dist {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .supplier-meta {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .lead-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 2px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .lead-same { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+        .lead-next { background: rgba(240,165,0,0.1); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); }
+        .lead-week { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+        .supplier-type { font-size: 12px; color: var(--muted); }
+
+        .btn-order {
+            width: 100%;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .btn-order:hover { background: #d49300; }
+
+        .btn-order-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-order-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--surface2);
+        }
+
+        /* ORDER SUMMARY */
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+        }
+
+        .summary-row {
+            display: flex; justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-of-type { border-bottom: none; }
+
+        .summary-label { color: var(--muted); }
+
+        .summary-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 14px;
+        }
+
+        .summary-total {
+            display: flex; justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            margin-top: 8px;
+            border-top: 1px solid var(--accent);
+        }
+
+        .total-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px; letter-spacing: 1px;
+        }
+
+        .total-val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px; letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .disclaimer {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 12px;
+            line-height: 1.5;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(240,165,0,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-icon"></div>
+            <span class="nav-logo-text">FIELDWISE<span> AI</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/drawings">Drawing Analyzer</a></li>
+            <li><a href="/timecards">Time Cards</a></li>
+            <li><a href="/field">Field Tool</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/cart" class="nav-cta">🛒 Cart <span id="nav-cart-count"></span></a></li>
+        </ul>
+    </nav>
+
+    <div class="main">
+        <div class="page-label">// Material Procurement</div>
+        <div class="page-title">YOUR CART</div>
+
+        <div class="cart-layout">
+
+            <!-- LEFT: Cart Items -->
+            <div>
+                <div class="cart-section">
+                    <div class="section-header">
+                        <div class="section-title">MATERIALS</div>
+                        <button class="clear-btn" onclick="clearCart()">Clear all</button>
+                    </div>
+                    <div class="cart-items" id="cart-items">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Sidebar -->
+            <div class="sidebar">
+
+                <!-- Location -->
+                <div class="location-card">
+                    <div class="location-header">
+                        <span class="location-icon">📍</span>
+                        <span class="location-title">NEARBY SUPPLIERS</span>
+                    </div>
+                    <div class="location-status" id="location-status">
+                        Share your location to find the closest suppliers with fastest lead times.
+                    </div>
+                    <button class="btn-locate" id="locate-btn" onclick="getLocation()">
+                        📍 Find Suppliers Near Me
+                    </button>
+                </div>
+
+                <!-- Suppliers (shown after location) -->
+                <div class="suppliers-card" id="suppliers-card" style="display:none">
+                    <div class="section-header">
+                        <div class="section-title">SUPPLIERS</div>
+                        <span style="font-size:12px;color:var(--muted)" id="suppliers-distance-label"></span>
+                    </div>
+                    <div id="suppliers-list">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="summary-card" id="summary-card" style="display:none">
+                    <div class="section-title" style="margin-bottom:16px;">ORDER SUMMARY</div>
+                    <div id="summary-rows"></div>
+                    <div class="summary-total">
+                        <div class="total-label">ESTIMATED TOTAL</div>
+                        <div class="total-val" id="summary-total">$0</div>
+                    </div>
+                    <div class="disclaimer">
+                        * Prices are estimates. Final pricing confirmed at checkout with supplier.
+                        Fieldwise may earn a referral commission on purchases made through these links.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Cart State ───────────────────────────────────────────────────────
+        let cart = JSON.parse(localStorage.getItem('fw_cart') || '[]');
+        let userLat = null;
+        let userLng = null;
+
+        const SUPPLIERS = [
+            {
+                name: 'Graybar Electric',
+                type: 'Electrical distributor',
+                baseUrl: 'https://www.graybar.com',
+                searchUrl: 'https://www.graybar.com/search?q=',
+                icon: '⚡',
+                leadTime: 'same',
+                leadLabel: 'Same day pickup',
+                affiliate: 'graybar'
+            },
+            {
+                name: 'Rexel',
+                type: 'Electrical distributor',
+                baseUrl: 'https://www.rexelusa.com',
+                searchUrl: 'https://www.rexelusa.com/search?q=',
+                icon: '🔌',
+                leadTime: 'next',
+                leadLabel: 'Next day delivery',
+                affiliate: 'rexel'
+            },
+            {
+                name: 'Wesco',
+                type: 'Industrial distributor',
+                baseUrl: 'https://www.wesco.com',
+                searchUrl: 'https://www.wesco.com/search?q=',
+                icon: '🏭',
+                leadTime: 'next',
+                leadLabel: 'Next day delivery',
+                affiliate: 'wesco'
+            },
+            {
+                name: 'Home Depot Pro',
+                type: 'General contractor supply',
+                baseUrl: 'https://www.homedepot.com',
+                searchUrl: 'https://www.homedepot.com/s/',
+                icon: '🔶',
+                leadTime: 'same',
+                leadLabel: 'Same day pickup',
+                affiliate: 'homedepot'
+            },
+            {
+                name: 'Fastenal',
+                type: 'Industrial supply',
+                baseUrl: 'https://www.fastenal.com',
+                searchUrl: 'https://www.fastenal.com/products/search?searchText=',
+                icon: '🔩',
+                leadTime: 'same',
+                leadLabel: 'Same day pickup',
+                affiliate: 'fastenal'
+            }
+        ];
+
+        // ── Render Cart ──────────────────────────────────────────────────────
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const summaryCard = document.getElementById('summary-card');
+
+            if (!cart.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🛒</div>
+                        <div class="empty-title">CART IS EMPTY</div>
+                        <p class="empty-sub">Use the AI chatbot or Field Tool to identify and add materials.</p>
+                        <a href="/field" class="btn-primary">📸 Open Field Tool</a>
+                    </div>`;
+                summaryCard.style.display = 'none';
+                updateNavCount();
+                return;
+            }
+
+            const icons = ['⚡', '🔧', '📦', '🔌', '🔩', '🪛', '💡', '🏗️'];
+            container.innerHTML = cart.map((item, i) => `
+                <div class="cart-item" id="item-${i}">
+                    <div class="item-icon">${icons[i % icons.length]}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-spec">${item.spec || 'Standard spec'}</div>
+                    </div>
+                    <div class="item-qty">
+                        <button class="qty-btn" onclick="updateQty(${i}, -1)">−</button>
+                        <span class="qty-num">${item.qty || 1}</span>
+                        <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
+                    </div>
+                    <div class="item-price">${item.price || 'TBD'}</div>
+                    <button class="item-remove" onclick="removeItem(${i})" title="Remove">✕</button>
+                </div>
+            `).join('');
+
+            renderSummary();
+            summaryCard.style.display = 'block';
+            updateNavCount();
+        }
+
+        function renderSummary() {
+            const rows = document.getElementById('summary-rows');
+            let total = 0;
+
+            rows.innerHTML = cart.map(item => {
+                const price = parsePrice(item.price);
+                const qty = item.qty || 1;
+                const lineTotal = price * qty;
+                total += lineTotal;
+                return `
+                    <div class="summary-row">
+                        <span class="summary-label">${item.name} × ${qty}</span>
+                        <span class="summary-val">${lineTotal > 0 ? '$' + lineTotal.toFixed(2) : 'TBD'}</span>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('summary-total').textContent =
+                total > 0 ? '$' + total.toFixed(2) : 'TBD';
+        }
+
+        function parsePrice(priceStr) {
+            if (!priceStr) return 0;
+            const num = parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
+            return isNaN(num) ? 0 : num;
+        }
+
+        function updateQty(index, delta) {
+            cart[index].qty = Math.max(1, (cart[index].qty || 1) + delta);
+            saveCart();
+            renderCart();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            saveCart();
+            renderCart();
+        }
+
+        function clearCart() {
+            if (!confirm('Clear all items from cart?')) return;
+            cart = [];
+            saveCart();
+            renderCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem('fw_cart', JSON.stringify(cart));
+        }
+
+        function updateNavCount() {
+            const el = document.getElementById('nav-cart-count');
+            if (el) el.textContent = cart.length > 0 ? `(${cart.length})` : '';
+        }
+
+        // ── Location ─────────────────────────────────────────────────────────
+        function getLocation() {
+            const btn = document.getElementById('locate-btn');
+            const status = document.getElementById('location-status');
+
+            btn.innerHTML = '<span class="spinner"></span> Locating...';
+            btn.disabled = true;
+
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation not supported — showing all suppliers.';
+                showSuppliers([]);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    userLat = pos.coords.latitude;
+                    userLng = pos.coords.longitude;
+                    status.innerHTML = `✓ Location found — showing nearest suppliers`;
+                    status.style.color = '#22c55e';
+                    btn.style.display = 'none';
+                    findNearbySuppliers(userLat, userLng);
+                },
+                (err) => {
+                    status.textContent = 'Could not get location — showing all suppliers.';
+                    btn.innerHTML = '📍 Try Again';
+                    btn.disabled = false;
+                    showSuppliers([]);
+                }
+            );
+        }
+
+        async function findNearbySuppliers(lat, lng) {
+            // Use Google Places API via our backend
+            try {
+                const res = await fetch(`/api/nearby-suppliers?lat=${lat}&lng=${lng}`);
+                const data = await res.json();
+                showSuppliers(data.suppliers || []);
+            } catch (e) {
+                // Fallback to generic suppliers with Google Maps links
+                showSuppliers([]);
+            }
+        }
+
+        function showSuppliers(nearbyData) {
+            const card = document.getElementById('suppliers-card');
+            const list = document.getElementById('suppliers-list');
+            const label = document.getElementById('suppliers-distance-label');
+
+            card.style.display = 'block';
+
+            if (userLat && userLng) {
+                label.textContent = `Near you`;
+            }
+
+            const cartQuery = cart.map(i => i.name).join(' ');
+
+            list.innerHTML = SUPPLIERS.map(s => {
+                const nearby = nearbyData.find(n => n.name && n.name.toLowerCase().includes(s.name.toLowerCase().split(' ')[0]));
+                const distance = nearby ? nearby.distance : null;
+                const address = nearby ? nearby.address : null;
+
+                const mapsUrl = userLat
+                    ? `https://www.google.com/maps/search/${encodeURIComponent(s.name)}/@${userLat},${userLng},13z`
+                    : `https://www.google.com/maps/search/${encodeURIComponent(s.name)}`;
+
+                const orderUrl = cart.length
+                    ? `${s.searchUrl}${encodeURIComponent(cartQuery)}&ref=fieldwise`
+                    : s.baseUrl;
+
+                const leadClass = s.leadTime === 'same' ? 'lead-same' : s.leadTime === 'next' ? 'lead-next' : 'lead-week';
+
+                return `
+                    <div class="supplier-item">
+                        <div class="supplier-top">
+                            <div class="supplier-name">${s.icon} ${s.name}</div>
+                            ${distance ? `<span class="supplier-dist">${distance}</span>` : ''}
+                        </div>
+                        <div class="supplier-meta">
+                            <span class="lead-badge ${leadClass}">${s.leadLabel}</span>
+                            <span class="supplier-type">${s.type}</span>
+                        </div>
+                        ${address ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">${address}</div>` : ''}
+                        <div style="display:flex;gap:8px;">
+                            <a href="${orderUrl}" target="_blank" class="btn-order" style="flex:2">
+                                🛒 Order Here →
+                            </a>
+                            <a href="${mapsUrl}" target="_blank" class="btn-order btn-order-secondary" style="flex:1">
+                                📍 Map
+                            </a>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── Init ─────────────────────────────────────────────────────────────
+        renderCart();
+
+        // Auto-locate if cart has items
+        if (cart.length > 0 && navigator.geolocation) {
+            setTimeout(getLocation, 500);
+        }
+    </script>
+
+    <script src="/static/chatbot.js"></script>
+</body>
+</html>

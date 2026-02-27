@@ -96,11 +96,45 @@ async def timecards_page():
     with open("timecards.html", "r") as f:
         return Response(content=f.read(), media_type="text/html")
 
-@app.get("/field")
-async def field_page():
-    with open("field.html", "r") as f:
+@app.get("/cart")
+async def cart_page():
+    import os
+    path = os.path.join(os.path.dirname(__file__), "cart.html")
+    with open(path, "r") as f:
+        return Response(content=f.read(), media_type="text/html")
+@app.get("/cart")
+async def cart_page():
+    with open("cart.html", "r") as f:
         return Response(content=f.read(), media_type="text/html")
 
+@app.get("/api/nearby-suppliers")
+async def nearby_suppliers(lat: float, lng: float):
+    try:
+        import googlemaps
+        gmaps = googlemaps.Client(key=os.getenv("GOOGLE_MAPS_API_KEY", ""))
+        suppliers = []
+        search_terms = ["Graybar Electric", "Rexel", "Wesco electrical", "Home Depot"]
+        for term in search_terms:
+            results = gmaps.places_nearby(
+                location=(lat, lng),
+                radius=25000,
+                keyword=term
+            )
+            for place in results.get('results', [])[:1]:
+                dist_result = gmaps.distance_matrix(
+                    origins=[(lat, lng)],
+                    destinations=[place['geometry']['location']],
+                    mode='driving'
+                )
+                distance = dist_result['rows'][0]['elements'][0].get('distance', {}).get('text', '')
+                suppliers.append({
+                    'name': place['name'],
+                    'address': place.get('vicinity', ''),
+                    'distance': distance
+                })
+        return {"suppliers": suppliers}
+    except Exception as e:
+        return {"suppliers": [], "error": str(e)}
 @app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}

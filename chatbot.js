@@ -657,21 +657,19 @@ You are not a general AI — you are a construction specialist. If asked about n
         const typingEl = appendTyping();
 
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 1000,
-                    system: SYSTEM_PROMPT,
-                    messages: history
-                })
-            });
+           const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        system: SYSTEM_PROMPT,
+        messages: history
+    })
+});
 
-            const data = await response.json();
-            typingEl.remove();
+const data = await response.json();
+typingEl.remove();
 
-            const reply = data.content?.[0]?.text || 'Sorry, something went wrong.';
+const reply = data.content || 'Sorry, something went wrong.';
             history.push({ role: 'assistant', content: reply });
 
             // Parse for material identification

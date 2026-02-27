@@ -132,7 +132,9 @@ async def nearby_suppliers(lat: float, lng: float):
                     'address': place.get('vicinity', ''),
                     'distance': distance
                 })
-   return {"suppliers": [], "error": str(e)}
+        return {"suppliers": suppliers}
+    except Exception as e:
+        return {"suppliers": [], "error": str(e)}
 
 @app.post("/api/chat")
 async def chat_endpoint(request: Request):

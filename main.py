@@ -17,7 +17,7 @@ from datetime import datetime
 
 # Auth and Database
 from database import (
-    init_db, get_user_by_email, create_user,
+    init_db, get_db, get_user_by_email, create_user,
     create_project, get_user_projects, get_project_by_id,
     delete_project, share_project, get_shared_projects, update_last_login
 )

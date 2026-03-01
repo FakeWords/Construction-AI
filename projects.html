@@ -18,133 +18,376 @@
             --red: #ef4444;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background-image: linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-        }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow: hidden; }
+
+        /* NAV */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 40px; height: 64px;
-            background: rgba(10,12,15,0.95); backdrop-filter: blur(12px);
+            padding: 0 24px; height: 56px;
+            background: rgba(10,12,15,0.98); backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
-        .nav-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--text); }
+        .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .nav-logo-icon { width: 24px; height: 24px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .nav-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; color: var(--text); }
         .nav-logo-text span { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
-        .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .nav-links { display: flex; align-items: center; gap: 20px; list-style: none; }
+        .nav-links a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
         .nav-links a:hover { color: var(--text); }
-        .nav-user { display: flex; align-items: center; gap: 12px; }
-        .nav-user-name { font-size: 13px; color: var(--accent); font-family: 'DM Mono', monospace; }
-        .btn-signout { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 5px 10px; cursor: pointer; border-radius: 2px; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+        .nav-user { display: flex; align-items: center; gap: 10px; }
+        .nav-user-name { font-size: 12px; color: var(--accent); font-family: 'DM Mono', monospace; }
+        .btn-signout { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 4px 8px; cursor: pointer; border-radius: 2px; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
         .btn-signout:hover { border-color: var(--red); color: var(--red); }
-        .main { max-width: 1300px; margin: 0 auto; padding: 84px 40px 60px; position: relative; z-index: 1; }
-        #view-list { display: block; }
-        #view-hub { display: none; }
-        .list-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px; }
-        .page-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
-        .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 2px; line-height: 1; }
-        .btn-new { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #000; padding: 12px 24px; border-radius: 2px; font-weight: 600; font-size: 14px; text-decoration: none; transition: background 0.2s; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-        .btn-new:hover { background: #d49300; }
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px; background: var(--border); }
-        .project-card { background: var(--surface); padding: 28px; cursor: pointer; transition: background 0.2s; position: relative; overflow: hidden; }
-        .project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform: scaleX(0); transition: transform 0.3s; }
-        .project-card:hover::before { transform: scaleX(1); }
-        .project-card:hover { background: var(--surface2); }
-        .project-card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .project-trade { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; background: rgba(240,165,0,0.1); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); padding: 3px 8px; }
-        .project-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-        .project-name { font-weight: 600; font-size: 17px; margin-bottom: 4px; }
-        .project-file { font-size: 12px; color: var(--muted); margin-bottom: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .project-stats { display: flex; gap: 16px; }
-        .project-stat { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
-        .empty-state { text-align: center; padding: 80px 40px; border: 1px dashed var(--border); }
-        .empty-icon { font-size: 48px; margin-bottom: 16px; }
-        .empty-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 8px; }
-        .empty-sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
-        .hub-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .btn-back { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: all 0.2s; }
-        .btn-back:hover { border-color: var(--accent); color: var(--accent); }
-        .hub-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 2px; }
-        .hub-trade { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; background: rgba(240,165,0,0.1); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); padding: 4px 10px; }
-        .hub-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
-        .hub-tab { padding: 12px 24px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+
+        /* LAYOUT */
+        .app { display: flex; height: calc(100vh - 56px); margin-top: 56px; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px; flex-shrink: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .sidebar-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px; letter-spacing: 2px; color: var(--text);
+        }
+
+        .btn-new-project {
+            display: flex; align-items: center; gap: 4px;
+            background: var(--accent); color: #000;
+            border: none; padding: 6px 10px;
+            border-radius: 2px; cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px; font-weight: 600;
+            transition: background 0.2s; white-space: nowrap;
+        }
+        .btn-new-project:hover { background: #d49300; }
+
+        .sidebar-search {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 7px 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .sidebar-search input::placeholder { color: var(--muted); }
+        .sidebar-search input:focus { border-color: var(--accent); }
+
+        .project-list { flex: 1; overflow-y: auto; }
+        .project-list::-webkit-scrollbar { width: 4px; }
+        .project-list::-webkit-scrollbar-track { background: transparent; }
+        .project-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+        .project-list-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+
+        .project-list-item:hover { background: var(--surface2); }
+        .project-list-item.active { background: var(--surface2); border-left: 2px solid var(--accent); }
+
+        .pli-name {
+            font-size: 13px; font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .pli-meta {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .pli-trade {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px; letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .pli-date {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; color: var(--muted);
+        }
+
+        .pli-badges {
+            display: flex; gap: 6px; margin-top: 6px;
+        }
+
+        .pli-badge {
+            font-size: 10px; color: var(--muted);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .sidebar-empty {
+            padding: 40px 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* WELCOME STATE */
+        #welcome-state {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            color: var(--muted);
+        }
+
+        .welcome-icon { font-size: 48px; }
+        .welcome-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--text); }
+        .welcome-sub { font-size: 14px; max-width: 300px; text-align: center; line-height: 1.6; }
+
+        /* HUB */
+        #hub-state { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+
+        .hub-topbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+            background: var(--surface);
+        }
+
+        .hub-title-row { display: flex; align-items: center; gap: 12px; }
+
+        .hub-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px; letter-spacing: 2px;
+        }
+
+        .hub-trade {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 2px;
+            background: rgba(240,165,0,0.1);
+            color: var(--accent);
+            border: 1px solid rgba(240,165,0,0.2);
+            padding: 3px 8px;
+        }
+
+        .hub-actions { display: flex; gap: 8px; }
+
+        .btn-hub-action {
+            font-size: 12px; padding: 6px 12px;
+            background: none; border: 1px solid var(--border);
+            color: var(--muted); cursor: pointer;
+            border-radius: 2px; transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-hub-action:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-hub-delete { }
+        .btn-hub-delete:hover { border-color: var(--red) !important; color: var(--red) !important; }
+
+        /* TABS */
+        .hub-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+            padding: 0 24px;
+        }
+
+        .hub-tab {
+            padding: 10px 20px;
+            font-size: 13px; font-weight: 500;
+            color: var(--muted); cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+
         .hub-tab:hover { color: var(--text); }
         .hub-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .tab-count { font-family: 'DM Mono', monospace; font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 10px; }
-        .hub-tab.active .tab-count { background: rgba(240,165,0,0.1); border-color: rgba(240,165,0,0.3); color: var(--accent); }
-        .tab-panel { display: none; }
+
+        .tab-count {
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            background: var(--surface2); border: 1px solid var(--border);
+            padding: 1px 5px; border-radius: 8px;
+        }
+
+        .hub-tab.active .tab-count {
+            background: rgba(240,165,0,0.1);
+            border-color: rgba(240,165,0,0.3);
+            color: var(--accent);
+        }
+
+        /* TAB PANELS */
+        .tab-panels { flex: 1; overflow: hidden; }
+        .tab-panel { display: none; height: 100%; overflow-y: auto; padding: 24px; }
+        .tab-panel::-webkit-scrollbar { width: 4px; }
+        .tab-panel::-webkit-scrollbar-thumb { background: var(--border); }
         .tab-panel.active { display: block; }
-        .upload-zone { border: 2px dashed var(--border); border-radius: 4px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 24px; }
-        .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(240,165,0,0.03); }
-        .upload-icon { font-size: 36px; margin-bottom: 12px; }
-        .upload-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 6px; }
-        .upload-sub { font-size: 13px; color: var(--muted); }
-        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px; background: var(--border); }
-        .file-card { background: var(--surface); padding: 20px; transition: background 0.2s; }
+
+        /* ANALYSIS PANEL */
+        .analysis-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-bottom: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* FILES PANEL */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+            border-radius: 2px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(240,165,0,0.03);
+        }
+
+        .upload-zone-text { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 2px; background: var(--border);
+        }
+
+        .file-card {
+            background: var(--surface); padding: 16px;
+            transition: background 0.2s;
+        }
+
         .file-card:hover { background: var(--surface2); }
-        .file-icon { font-size: 28px; margin-bottom: 10px; }
-        .file-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-        .file-actions { display: flex; gap: 8px; margin-top: 12px; }
-        .btn-file { font-size: 11px; padding: 4px 10px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; border: none; }
-        .btn-download { background: var(--accent); color: #000; font-weight: 600; }
-        .btn-delete-file { background: none; color: var(--muted); border: 1px solid var(--border) !important; }
-        .btn-delete-file:hover { color: var(--red); border-color: var(--red) !important; }
-        .rfi-toolbar { display: flex; gap: 12px; margin-bottom: 20px; }
-        .btn-add-rfi { display: flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; padding: 10px 18px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-add-rfi:hover { background: #d49300; }
-        .btn-export-rfi { display: flex; align-items: center; gap: 6px; background: none; color: var(--text); border: 1px solid var(--border); padding: 10px 18px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: all 0.2s; }
-        .btn-export-rfi:hover { border-color: var(--accent); color: var(--accent); }
+        .file-icon { font-size: 24px; margin-bottom: 8px; }
+        .file-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 10px; }
+        .file-btns { display: flex; gap: 6px; }
+        .btn-file { font-size: 11px; padding: 4px 8px; border-radius: 2px; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-dl { background: var(--accent); color: #000; font-weight: 600; }
+        .btn-del { background: none; color: var(--muted); border: 1px solid var(--border) !important; }
+        .btn-del:hover { color: var(--red); border-color: var(--red) !important; }
+
+        /* RFI PANEL */
+        .panel-toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        .btn-primary-sm {
+            display: flex; align-items: center; gap: 5px;
+            background: var(--accent); color: #000;
+            border: none; padding: 8px 16px;
+            border-radius: 2px; cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-primary-sm:hover { background: #d49300; }
+
+        .btn-secondary-sm {
+            display: flex; align-items: center; gap: 5px;
+            background: none; color: var(--text);
+            border: 1px solid var(--border); padding: 8px 16px;
+            border-radius: 2px; cursor: pointer;
+            font-family: 'DM Sans', sans-serif; font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-secondary-sm:hover { border-color: var(--accent); color: var(--accent); }
+
         .rfi-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); }
-        .rfi-table th { padding: 12px 16px; text-align: left; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface2); }
-        .rfi-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .rfi-table th { padding: 10px 14px; text-align: left; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface2); }
+        .rfi-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .rfi-table tr:last-child td { border-bottom: none; }
         .rfi-table tr:hover td { background: var(--surface2); }
-        .rfi-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 8px; border-radius: 2px; font-family: 'DM Mono', monospace; }
+        .rfi-num { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
+        .rfi-status { display: inline-flex; align-items: center; font-size: 10px; padding: 2px 7px; border-radius: 2px; font-family: 'DM Mono', monospace; }
         .status-open { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
         .status-pending { background: rgba(240,165,0,0.1); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); }
         .status-closed { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
-        .rfi-num { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
-        .note-composer { background: var(--surface); border: 1px solid var(--border); margin-bottom: 20px; }
-        .note-composer-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--accent); }
-        .note-composer textarea { width: 100%; background: transparent; border: none; color: var(--text); padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; min-height: 100px; outline: none; line-height: 1.6; }
+
+        /* NOTEBOOK PANEL */
+        .note-composer { background: var(--surface); border: 1px solid var(--border); margin-bottom: 16px; }
+        .note-composer-hdr { padding: 10px 14px; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--accent); }
+        .note-composer textarea { width: 100%; background: transparent; border: none; color: var(--text); padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; min-height: 80px; outline: none; line-height: 1.6; }
         .note-composer textarea::placeholder { color: var(--muted); }
-        .note-composer-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
-        .btn-save-note { background: var(--accent); color: #000; border: none; padding: 8px 20px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+        .note-composer-ftr { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+        .btn-save-note { background: var(--accent); color: #000; border: none; padding: 7px 18px; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; transition: background 0.2s; }
         .btn-save-note:hover { background: #d49300; }
+
         .notes-list { display: flex; flex-direction: column; gap: 2px; background: var(--border); }
-        .note-card { background: var(--surface); padding: 20px 24px; transition: background 0.2s; }
+        .note-card { background: var(--surface); padding: 16px 20px; transition: background 0.2s; }
         .note-card:hover { background: var(--surface2); }
-        .note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .note-timestamp { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); }
-        .note-body { font-size: 14px; line-height: 1.7; color: var(--text); }
-        .note-delete { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; transition: color 0.2s; padding: 2px 6px; }
-        .note-delete:hover { color: var(--red); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; }
+        .note-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .note-ts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); }
+        .note-body { font-size: 14px; line-height: 1.7; }
+        .note-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 5px; transition: color 0.2s; }
+        .note-del:hover { color: var(--red); }
+
+        /* EMPTY STATES */
+        .panel-empty { text-align: center; padding: 60px; color: var(--muted); font-size: 14px; }
+        .panel-empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+        /* MODALS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; align-items: center; justify-content: center; }
         .modal-overlay.active { display: flex; }
-        .modal { background: var(--surface); border: 1px solid var(--border); padding: 36px; width: 100%; max-width: 560px; }
-        .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 24px; }
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; border-radius: 2px; outline: none; transition: border-color 0.2s; }
+        .modal { background: var(--surface); border: 1px solid var(--border); padding: 32px; width: 100%; max-width: 520px; }
+        .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; border-radius: 2px; outline: none; transition: border-color 0.2s; }
         .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
-        .form-textarea { resize: vertical; min-height: 80px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-        .btn-cancel { flex: 1; padding: 12px; background: none; color: var(--muted); border: 1px solid var(--border); cursor: pointer; border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 14px; transition: all 0.2s; }
-        .btn-confirm { flex: 2; padding: 12px; background: var(--accent); color: #000; border: none; cursor: pointer; border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; transition: background 0.2s; }
+        .form-textarea { resize: vertical; min-height: 70px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancel { flex: 1; padding: 10px; background: none; color: var(--muted); border: 1px solid var(--border); cursor: pointer; border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 13px; transition: all 0.2s; }
+        .btn-confirm { flex: 2; padding: 10px; background: var(--accent); color: #000; border: none; cursor: pointer; border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; transition: background 0.2s; }
         .btn-confirm:hover { background: #d49300; }
-        .loading-msg { text-align: center; padding: 60px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 13px; }
-        .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 12px; display: none; }
+
+        .progress-bar { height: 2px; background: var(--border); margin-top: 10px; display: none; }
         .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; width: 0%; }
-        @media (max-width: 768px) { nav { padding: 0 20px; } .main { padding: 84px 20px 60px; } .hub-tab { padding: 10px 14px; font-size: 13px; } .form-row { grid-template-columns: 1fr; } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 200px; }
+            .hub-tab { padding: 10px 12px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -153,85 +396,140 @@
             <div class="nav-logo-icon"></div>
             <span class="nav-logo-text">FIELDWISE<span> AI</span></span>
         </a>
-        <ul class="nav-links">
-            <li><a href="/drawings">Drawing Analyzer</a></li>
-            <li><a href="/timecards">Time Cards</a></li>
-            <li><a href="/field">Field Tool</a></li>
-            <li><a href="/cart">🛒 Cart</a></li>
-        </ul>
-        <div class="nav-user">
-            <span class="nav-user-name" id="userName"></span>
-            <button class="btn-signout" onclick="signOut()">Sign Out</button>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="/drawings">Drawings</a></li>
+                <li><a href="/timecards">Time Cards</a></li>
+                <li><a href="/field">Field Tool</a></li>
+                <li><a href="/cart">🛒 Cart</a></li>
+            </ul>
+            <div class="nav-user">
+                <span class="nav-user-name" id="userName"></span>
+                <button class="btn-signout" onclick="signOut()">Sign Out</button>
+            </div>
         </div>
     </nav>
 
-    <div class="main">
-        <!-- LIST VIEW -->
-        <div id="view-list">
-            <div class="list-header">
-                <div>
-                    <div class="page-label">// My Workspace</div>
-                    <div class="page-title">PROJECTS</div>
-                </div>
-                <a href="/drawings" class="btn-new">+ New Analysis</a>
+    <div class="app">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">PROJECTS</span>
+                <button class="btn-new-project" onclick="openNewProjectModal()">+ New</button>
             </div>
-            <div id="projects-loading" class="loading-msg">Loading projects...</div>
-            <div id="projects-container" style="display:none"></div>
+            <div class="sidebar-search">
+                <input type="text" id="search-input" placeholder="Search projects..." oninput="filterProjects()">
+            </div>
+            <div class="project-list" id="project-list">
+                <div class="sidebar-empty">Loading...</div>
+            </div>
         </div>
 
-        <!-- HUB VIEW -->
-        <div id="view-hub">
-            <div class="hub-header">
-                <button class="btn-back" onclick="showList()">← Back</button>
-                <div class="hub-title" id="hub-title">PROJECT</div>
-                <div class="hub-trade" id="hub-trade">ELECTRICAL</div>
-            </div>
-            <div class="hub-tabs">
-                <div class="hub-tab active" onclick="showTab('analysis')" id="tab-analysis">📐 Analysis</div>
-                <div class="hub-tab" onclick="showTab('files')" id="tab-files">📁 Files <span class="tab-count" id="files-count">0</span></div>
-                <div class="hub-tab" onclick="showTab('rfis')" id="tab-rfis">📋 RFIs <span class="tab-count" id="rfis-count">0</span></div>
-                <div class="hub-tab" onclick="showTab('notebook')" id="tab-notebook">📓 Notebook <span class="tab-count" id="notes-count">0</span></div>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- WELCOME STATE -->
+            <div id="welcome-state">
+                <div class="welcome-icon">📐</div>
+                <div class="welcome-title">SELECT A PROJECT</div>
+                <p class="welcome-sub">Choose a project from the sidebar or create a new one to get started.</p>
+                <button class="btn-new-project" onclick="openNewProjectModal()" style="margin-top:8px;padding:10px 20px;font-size:14px;">+ New Project</button>
             </div>
 
-            <!-- Analysis Tab -->
-            <div class="tab-panel active" id="panel-analysis">
-                <div id="analysis-content" style="font-family:'DM Mono',monospace;font-size:13px;line-height:1.7;background:var(--surface);border:1px solid var(--border);padding:24px;white-space:pre-wrap;"></div>
-                <div style="margin-top:16px;">
-                    <button class="btn-new" onclick="downloadExcel()" style="font-size:13px;padding:10px 20px;">⬇ Download Excel</button>
-                </div>
-            </div>
-
-            <!-- Files Tab -->
-            <div class="tab-panel" id="panel-files">
-                <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-upload-input').click()">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-title">DROP FILES HERE</div>
-                    <div class="upload-sub">Drawings, specs, submittals, photos — any file type</div>
-                    <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-                </div>
-                <input type="file" id="file-upload-input" style="display:none" multiple onchange="handleFileUpload(this)">
-                <div id="files-list"></div>
-            </div>
-
-            <!-- RFIs Tab -->
-            <div class="tab-panel" id="panel-rfis">
-                <div class="rfi-toolbar">
-                    <button class="btn-add-rfi" onclick="openRFIModal()">+ New RFI</button>
-                    <button class="btn-export-rfi" onclick="exportRFIs()">⬇ Export Log</button>
-                </div>
-                <div id="rfis-list"></div>
-            </div>
-
-            <!-- Notebook Tab -->
-            <div class="tab-panel" id="panel-notebook">
-                <div class="note-composer">
-                    <div class="note-composer-header">// NEW ENTRY</div>
-                    <textarea id="note-input" placeholder="Add a field note, daily log, or observation..."></textarea>
-                    <div class="note-composer-footer">
-                        <button class="btn-save-note" onclick="saveNote()">Save Entry →</button>
+            <!-- HUB STATE -->
+            <div id="hub-state">
+                <div class="hub-topbar">
+                    <div class="hub-title-row">
+                        <div class="hub-title" id="hub-title">PROJECT</div>
+                        <div class="hub-trade" id="hub-trade">ELECTRICAL</div>
+                    </div>
+                    <div class="hub-actions">
+                        <button class="btn-hub-action" onclick="downloadExcel()">⬇ Excel</button>
+                        <button class="btn-hub-action btn-hub-delete" onclick="deleteProject()">🗑 Delete</button>
                     </div>
                 </div>
-                <div id="notes-list"></div>
+
+                <div class="hub-tabs">
+                    <div class="hub-tab active" onclick="showTab('analysis')" id="tab-analysis">📐 Analysis</div>
+                    <div class="hub-tab" onclick="showTab('files')" id="tab-files">📁 Files <span class="tab-count" id="files-count">0</span></div>
+                    <div class="hub-tab" onclick="showTab('rfis')" id="tab-rfis">📋 RFIs <span class="tab-count" id="rfis-count">0</span></div>
+                    <div class="hub-tab" onclick="showTab('notebook')" id="tab-notebook">📓 Notebook <span class="tab-count" id="notes-count">0</span></div>
+                </div>
+
+                <div class="tab-panels">
+                    <!-- Analysis -->
+                    <div class="tab-panel active" id="panel-analysis">
+                        <div class="analysis-box" id="analysis-content"></div>
+                    </div>
+
+                    <!-- Files -->
+                    <div class="tab-panel" id="panel-files">
+                        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                            <div style="font-size:28px">📁</div>
+                            <div class="upload-zone-text">Click or drag files here — drawings, specs, photos, submittals</div>
+                            <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                        </div>
+                        <input type="file" id="file-input" style="display:none" multiple onchange="handleUpload(this)">
+                        <div id="files-list"></div>
+                    </div>
+
+                    <!-- RFIs -->
+                    <div class="tab-panel" id="panel-rfis">
+                        <div class="panel-toolbar">
+                            <button class="btn-primary-sm" onclick="openRFIModal()">+ New RFI</button>
+                            <button class="btn-secondary-sm" onclick="exportRFIs()">⬇ Export Log</button>
+                        </div>
+                        <div id="rfis-list"></div>
+                    </div>
+
+                    <!-- Notebook -->
+                    <div class="tab-panel" id="panel-notebook">
+                        <div class="note-composer">
+                            <div class="note-composer-hdr">// NEW ENTRY</div>
+                            <textarea id="note-input" placeholder="Add a field note, daily log, punch list item, or observation..."></textarea>
+                            <div class="note-composer-ftr">
+                                <button class="btn-save-note" onclick="saveNote()">Save Entry →</button>
+                            </div>
+                        </div>
+                        <div id="notes-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="new-project-modal">
+        <div class="modal">
+            <div class="modal-title">NEW PROJECT</div>
+            <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" id="np-name" placeholder="e.g. Building A — 3rd Floor Electrical">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Trade</label>
+                    <select class="form-select" id="np-trade">
+                        <option value="electrical">Electrical</option>
+                        <option value="hvac">HVAC</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="fire_protection">Fire Protection</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Code Book</label>
+                    <select class="form-select" id="np-code">
+                        <option value="NEC_2023">NEC 2023</option>
+                        <option value="NEC_2020">NEC 2020</option>
+                        <option value="IBC_2021">IBC 2021</option>
+                        <option value="IMC_2021">IMC 2021</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeNewProjectModal()">Cancel</button>
+                <button class="btn-confirm" onclick="createProject()">Create Project →</button>
             </div>
         </div>
     </div>
@@ -268,7 +566,7 @@
                     <input type="text" class="form-input" id="rfi-assigned" placeholder="Engineer / Architect">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Date Due</label>
+                    <label class="form-label">Due Date</label>
                     <input type="date" class="form-input" id="rfi-due">
                 </div>
             </div>
@@ -285,51 +583,64 @@
         if (!token) window.location.href = '/login';
         document.getElementById('userName').textContent = user.name || '';
 
+        let allProjects = [];
         let currentProject = null;
         let projectFiles = [], projectRFIs = [], projectNotes = [];
 
+        // ── LOAD PROJECTS ─────────────────────────────────────
         async function loadProjects() {
             try {
                 const res = await fetch('/api/projects', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (res.status === 401) { signOut(); return; }
                 const data = await res.json();
-                document.getElementById('projects-loading').style.display = 'none';
-                document.getElementById('projects-container').style.display = 'block';
-                renderProjects(data.projects);
-            } catch(e) { document.getElementById('projects-loading').textContent = 'Failed to load projects.'; }
+                allProjects = data.projects || [];
+                renderSidebar(allProjects);
+            } catch(e) {
+                document.getElementById('project-list').innerHTML = '<div class="sidebar-empty">Failed to load.</div>';
+            }
         }
 
-        function renderProjects(projects) {
-            const container = document.getElementById('projects-container');
-            if (!projects || !projects.length) {
-                container.innerHTML = `<div class="empty-state"><div class="empty-icon">📐</div><div class="empty-title">NO PROJECTS YET</div><p class="empty-sub">Upload your first drawing to get started.</p><a href="/drawings" class="btn-new">+ New Analysis</a></div>`;
+        function renderSidebar(projects) {
+            const list = document.getElementById('project-list');
+            if (!projects.length) {
+                list.innerHTML = '<div class="sidebar-empty">No projects yet.<br>Create one to get started.</div>';
                 return;
             }
-            container.innerHTML = `<div class="projects-grid">${projects.map(p => {
-                const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                return `<div class="project-card" onclick='openHub(${JSON.stringify(p)})'>
-                    <div class="project-card-meta"><span class="project-trade">${p.trade||'Electrical'}</span><span class="project-date">${date}</span></div>
-                    <div class="project-name">${p.name}</div>
-                    <div class="project-file">${p.filename||''}</div>
-                    <div class="project-stats"><span class="project-stat">📁 Files</span><span class="project-stat">📋 RFIs</span><span class="project-stat">📓 Notes</span></div>
+            list.innerHTML = projects.map(p => {
+                const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const isActive = currentProject && currentProject.id === p.id;
+                return `<div class="project-list-item ${isActive ? 'active' : ''}" onclick="openProject(${p.id})">
+                    <div class="pli-name">${p.name}</div>
+                    <div class="pli-meta">
+                        <span class="pli-trade">${p.trade || 'General'}</span>
+                        <span class="pli-date">${date}</span>
+                    </div>
                 </div>`;
-            }).join('')}</div>`;
+            }).join('');
         }
 
-        async function openHub(project) {
+        function filterProjects() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allProjects.filter(p => p.name.toLowerCase().includes(q) || (p.trade || '').toLowerCase().includes(q));
+            renderSidebar(filtered);
+        }
+
+        // ── OPEN PROJECT ──────────────────────────────────────
+        async function openProject(projectId) {
+            const project = allProjects.find(p => p.id === projectId);
+            if (!project) return;
             currentProject = project;
-            document.getElementById('hub-title').textContent = project.name.toUpperCase();
-            document.getElementById('hub-trade').textContent = (project.trade||'Electrical').toUpperCase();
-            document.getElementById('analysis-content').textContent = project.analysis || 'No analysis available.';
-            document.getElementById('view-list').style.display = 'none';
-            document.getElementById('view-hub').style.display = 'block';
-            showTab('analysis');
-            await Promise.all([loadFiles(), loadRFIs(), loadNotes()]);
-        }
 
-        function showList() {
-            document.getElementById('view-hub').style.display = 'none';
-            document.getElementById('view-list').style.display = 'block';
+            document.getElementById('hub-title').textContent = project.name.toUpperCase();
+            document.getElementById('hub-trade').textContent = (project.trade || 'General').toUpperCase();
+            document.getElementById('analysis-content').textContent = project.analysis || 'No drawing analysis available for this project.\n\nUse the Drawing Analyzer to upload and analyze drawings, or use the Files tab to upload project documents.';
+
+            document.getElementById('welcome-state').style.display = 'none';
+            document.getElementById('hub-state').style.display = 'flex';
+
+            showTab('analysis');
+            renderSidebar(allProjects);
+            await Promise.all([loadFiles(), loadRFIs(), loadNotes()]);
         }
 
         function showTab(name) {
@@ -341,9 +652,41 @@
 
         function downloadExcel() {
             if (currentProject?.excel_filename) window.location.href = `/api/download-excel/${currentProject.excel_filename}`;
+            else alert('No Excel file for this project.');
         }
 
-        // FILES
+        async function deleteProject() {
+            if (!confirm(`Delete "${currentProject.name}"? This cannot be undone.`)) return;
+            await fetch(`/api/projects/${currentProject.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            currentProject = null;
+            document.getElementById('hub-state').style.display = 'none';
+            document.getElementById('welcome-state').style.display = 'flex';
+            await loadProjects();
+        }
+
+        // ── NEW PROJECT ───────────────────────────────────────
+        function openNewProjectModal() { document.getElementById('new-project-modal').classList.add('active'); }
+        function closeNewProjectModal() { document.getElementById('new-project-modal').classList.remove('active'); }
+
+        async function createProject() {
+            const name = document.getElementById('np-name').value.trim();
+            if (!name) { alert('Project name required'); return; }
+            const trade = document.getElementById('np-trade').value;
+            const code = document.getElementById('np-code').value;
+
+            const res = await fetch('/api/projects/create-blank', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, trade, code_book: code })
+            });
+            const data = await res.json();
+            closeNewProjectModal();
+            document.getElementById('np-name').value = '';
+            await loadProjects();
+            if (data.id) openProject(data.id);
+        }
+
+        // ── FILES ─────────────────────────────────────────────
         async function loadFiles() {
             try {
                 const res = await fetch(`/api/projects/${currentProject.id}/files`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -356,22 +699,29 @@
         function renderFiles() {
             document.getElementById('files-count').textContent = projectFiles.length;
             const list = document.getElementById('files-list');
-            if (!projectFiles.length) { list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No files yet — upload above.</div>'; return; }
+            if (!projectFiles.length) {
+                list.innerHTML = '<div class="panel-empty"><div class="panel-empty-icon">📁</div>No files yet — upload above.</div>';
+                return;
+            }
             const icons = { pdf:'📄', png:'🖼️', jpg:'🖼️', jpeg:'🖼️', xlsx:'📊', xls:'📊', dwg:'📐', dxf:'📐', doc:'📝', docx:'📝' };
             list.innerHTML = `<div class="files-grid">${projectFiles.map(f => {
-                const ext = f.name.split('.').pop().toLowerCase();
+                const ext = (f.name.split('.').pop() || '').toLowerCase();
                 const icon = icons[ext] || '📎';
                 const size = f.size ? (f.size/1024/1024).toFixed(1)+' MB' : '';
-                const date = new Date(f.uploaded_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-                return `<div class="file-card"><div class="file-icon">${icon}</div><div class="file-name" title="${f.name}">${f.name}</div><div class="file-meta">${size} · ${date}</div>
-                    <div class="file-actions">
-                        <button class="btn-file btn-download" onclick="downloadFile('${f.gcs_path}','${f.name}')">⬇</button>
-                        <button class="btn-file btn-delete-file" onclick="deleteFile(${f.id})">✕</button>
-                    </div></div>`;
+                const date = new Date(f.uploaded_at).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+                return `<div class="file-card">
+                    <div class="file-icon">${icon}</div>
+                    <div class="file-name" title="${f.name}">${f.name}</div>
+                    <div class="file-meta">${size}${size ? ' · ' : ''}${date}</div>
+                    <div class="file-btns">
+                        <button class="btn-file btn-dl" onclick="downloadFile('${f.gcs_path}','${f.name}')">⬇</button>
+                        <button class="btn-file btn-del" onclick="deleteFile(${f.id})">✕</button>
+                    </div>
+                </div>`;
             }).join('')}</div>`;
         }
 
-        async function handleFileUpload(input) {
+        async function handleUpload(input) {
             const files = Array.from(input.files);
             if (!files.length) return;
             const bar = document.getElementById('progress-bar');
@@ -392,22 +742,21 @@
         async function downloadFile(gcsPath, name) {
             const res = await fetch(`/api/files/download?path=${encodeURIComponent(gcsPath)}`, { headers:{'Authorization':`Bearer ${token}`} });
             const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href=url; a.download=name; a.click();
+            const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
         }
 
-        async function deleteFile(fileId) {
+        async function deleteFile(id) {
             if (!confirm('Delete this file?')) return;
-            await fetch(`/api/files/${fileId}`, { method:'DELETE', headers:{'Authorization':`Bearer ${token}`} });
+            await fetch(`/api/files/${id}`, { method:'DELETE', headers:{'Authorization':`Bearer ${token}`} });
             await loadFiles();
         }
 
         const zone = document.getElementById('upload-zone');
         zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
         zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-        zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); const inp = document.getElementById('file-upload-input'); inp.files = e.dataTransfer.files; handleFileUpload(inp); });
+        zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); const inp = document.getElementById('file-input'); inp.files = e.dataTransfer.files; handleUpload(inp); });
 
-        // RFIs
+        // ── RFIs ──────────────────────────────────────────────
         async function loadRFIs() {
             try {
                 const res = await fetch(`/api/projects/${currentProject.id}/rfis`, { headers:{'Authorization':`Bearer ${token}`} });
@@ -420,16 +769,25 @@
         function renderRFIs() {
             document.getElementById('rfis-count').textContent = projectRFIs.length;
             const list = document.getElementById('rfis-list');
-            if (!projectRFIs.length) { list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No RFIs yet.</div>'; return; }
+            if (!projectRFIs.length) {
+                list.innerHTML = '<div class="panel-empty"><div class="panel-empty-icon">📋</div>No RFIs yet — create your first above.</div>';
+                return;
+            }
             const sc = { open:'status-open', pending:'status-pending', closed:'status-closed' };
-            list.innerHTML = `<table class="rfi-table"><thead><tr><th>RFI #</th><th>Subject</th><th>Assigned To</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>
-                ${projectRFIs.map(r => {
+            list.innerHTML = `<table class="rfi-table">
+                <thead><tr><th>RFI #</th><th>Subject</th><th>Assigned To</th><th>Due</th><th>Status</th><th></th></tr></thead>
+                <tbody>${projectRFIs.map(r => {
                     const due = r.due_date ? new Date(r.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
-                    return `<tr><td class="rfi-num">${r.rfi_number}</td><td>${r.subject}</td><td style="color:var(--muted)">${r.assigned_to||'—'}</td>
-                        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:12px">${due}</td>
+                    return `<tr>
+                        <td class="rfi-num">${r.rfi_number}</td>
+                        <td>${r.subject}</td>
+                        <td style="color:var(--muted)">${r.assigned_to||'—'}</td>
+                        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${due}</td>
                         <td><span class="rfi-status ${sc[r.status]||'status-open'}">${r.status.toUpperCase()}</span></td>
-                        <td><button onclick="deleteRFI(${r.id})" style="background:none;border:none;color:var(--muted);cursor:pointer">✕</button></td></tr>`;
-                }).join('')}</tbody></table>`;
+                        <td><button onclick="deleteRFI(${r.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">✕</button></td>
+                    </tr>`;
+                }).join('')}</tbody>
+            </table>`;
         }
 
         function openRFIModal() {
@@ -445,9 +803,13 @@
         function closeRFIModal() { document.getElementById('rfi-modal').classList.remove('active'); }
 
         async function saveRFI() {
-            const rfi = { rfi_number: document.getElementById('rfi-num').value, subject: document.getElementById('rfi-subject').value, description: document.getElementById('rfi-desc').value, assigned_to: document.getElementById('rfi-assigned').value, due_date: document.getElementById('rfi-due').value, status: document.getElementById('rfi-status').value };
-            if (!rfi.subject) { alert('Subject is required'); return; }
-            await fetch(`/api/projects/${currentProject.id}/rfis`, { method:'POST', headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body:JSON.stringify(rfi) });
+            const subject = document.getElementById('rfi-subject').value;
+            if (!subject) { alert('Subject is required'); return; }
+            await fetch(`/api/projects/${currentProject.id}/rfis`, {
+                method:'POST',
+                headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+                body:JSON.stringify({ rfi_number:document.getElementById('rfi-num').value, subject, description:document.getElementById('rfi-desc').value, assigned_to:document.getElementById('rfi-assigned').value, due_date:document.getElementById('rfi-due').value, status:document.getElementById('rfi-status').value })
+            });
             closeRFIModal();
             await loadRFIs();
         }
@@ -461,11 +823,10 @@
         function exportRFIs() {
             const lines = projectRFIs.map(r => `${r.rfi_number} | ${r.subject} | ${r.assigned_to||'Unassigned'} | Due: ${r.due_date||'TBD'} | ${r.status.toUpperCase()}`);
             const text = `RFI LOG — ${currentProject.name}\n${'='.repeat(60)}\n${lines.join('\n')}`;
-            const blob = new Blob([text],{type:'text/plain'});
-            const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`RFI-Log-${currentProject.name}.txt`; a.click();
+            const a = document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download=`RFI-Log-${currentProject.name}.txt`; a.click();
         }
 
-        // NOTES
+        // ── NOTES ─────────────────────────────────────────────
         async function loadNotes() {
             try {
                 const res = await fetch(`/api/projects/${currentProject.id}/notes`, { headers:{'Authorization':`Bearer ${token}`} });
@@ -478,10 +839,22 @@
         function renderNotes() {
             document.getElementById('notes-count').textContent = projectNotes.length;
             const list = document.getElementById('notes-list');
-            if (!projectNotes.length) { list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No notes yet.</div>'; return; }
+            if (!projectNotes.length) {
+                list.innerHTML = '<div class="panel-empty"><div class="panel-empty-icon">📓</div>No notes yet — add your first entry above.</div>';
+                return;
+            }
             list.innerHTML = `<div class="notes-list">${projectNotes.map(n => {
                 const dt = new Date(n.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
-                return `<div class="note-card"><div class="note-header"><span class="note-timestamp">${dt}</span><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:12px;color:var(--muted)">${n.author_name||user.name}</span><button class="note-delete" onclick="deleteNote(${n.id})">✕</button></div></div><div class="note-body">${n.content.replace(/\n/g,'<br>')}</div></div>`;
+                return `<div class="note-card">
+                    <div class="note-hdr">
+                        <span class="note-ts">${dt}</span>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-size:11px;color:var(--muted)">${n.author_name||user.name}</span>
+                            <button class="note-del" onclick="deleteNote(${n.id})">✕</button>
+                        </div>
+                    </div>
+                    <div class="note-body">${n.content.replace(/\n/g,'<br>')}</div>
+                </div>`;
             }).join('')}</div>`;
         }
 

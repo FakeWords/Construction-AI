@@ -213,6 +213,25 @@ async def get_me(request: Request):
 # ═══════════════════════════════════════════════════════════════
 # PROJECT ENDPOINTS
 # ═══════════════════════════════════════════════════════════════
+@app.post("/api/projects/create-blank")
+async def create_blank_project(request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    name = data.get("name", "").strip()
+    trade = data.get("trade", "general")
+    code_book = data.get("code_book", "NEC_2023")
+    if not name:
+        raise HTTPException(status_code=400, detail="Name required")
+    project = create_project(
+        user_id=user["id"],
+        name=name,
+        trade=trade,
+        code_book=code_book,
+        filename="",
+        analysis="",
+        excel_filename=""
+    )
+    return dict(project)
 
 @app.get("/api/projects")
 async def list_projects(request: Request):

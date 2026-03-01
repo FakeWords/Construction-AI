@@ -466,6 +466,150 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         raise HTTPException(status_code=400, detail=f"Failed to read PDF: {str(e)}")
 
 
+# ═══════════════════════════════════════════════════════════════
+# PROJECT HUB — FILES
+# ═══════════════════════════════════════════════════════════════
+
+def get_gcs_client():
+    from google.cloud import storage
+    import json
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS_JSON", "")
+    if creds_json:
+        from google.oauth2 import service_account
+        creds = service_account.Credentials.from_service_account_info(json.loads(creds_json))
+        return storage.Client(credentials=creds)
+    return storage.Client()
+
+@app.get("/api/projects/{project_id}/files")
+async def list_project_files(project_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM project_files WHERE project_id = %s ORDER BY uploaded_at DESC", (project_id,))
+        files = cur.fetchall()
+    return {"files": [dict(f) for f in files]}
+
+@app.post("/api/projects/{project_id}/files")
+async def upload_project_file(project_id: int, request: Request, file: UploadFile = File(...)):
+    user = get_current_user(request)
+    contents = await file.read()
+    bucket_name = os.environ.get("GOOGLE_CLOUD_BUCKET", "fieldwise-ai-files")
+    gcs_path = f"projects/{project_id}/{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(gcs_path)
+        blob.upload_from_string(contents, content_type=file.content_type)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO project_files (project_id, name, gcs_path, size) VALUES (%s, %s, %s, %s)",
+            (project_id, file.filename, gcs_path, len(contents))
+        )
+    return {"success": True}
+
+@app.get("/api/files/download")
+async def download_project_file(path: str, request: Request):
+    user = get_current_user(request)
+    bucket_name = os.environ.get("GOOGLE_CLOUD_BUCKET", "fieldwise-ai-files")
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(path)
+        contents = blob.download_as_bytes()
+        return Response(content=contents, media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={path.split('/')[-1]}"})
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@app.delete("/api/files/{file_id}")
+async def delete_project_file(file_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM project_files WHERE id = %s", (file_id,))
+        f = cur.fetchone()
+        if f:
+            try:
+                client = get_gcs_client()
+                bucket = client.bucket(os.environ.get("GOOGLE_CLOUD_BUCKET", "fieldwise-ai-files"))
+                bucket.blob(f["gcs_path"]).delete()
+            except: pass
+            cur.execute("DELETE FROM project_files WHERE id = %s", (file_id,))
+    return {"success": True}
+
+
+# ═══════════════════════════════════════════════════════════════
+# PROJECT HUB — RFIs
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/projects/{project_id}/rfis")
+async def list_rfis(project_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM project_rfis WHERE project_id = %s ORDER BY created_at DESC", (project_id,))
+        rfis = cur.fetchall()
+    return {"rfis": [dict(r) for r in rfis]}
+
+@app.post("/api/projects/{project_id}/rfis")
+async def create_rfi(project_id: int, request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO project_rfis (project_id, rfi_number, subject, description, assigned_to, due_date, status) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (project_id, data.get("rfi_number"), data.get("subject"), data.get("description"),
+             data.get("assigned_to"), data.get("due_date"), data.get("status", "open"))
+        )
+    return {"success": True}
+
+@app.delete("/api/rfis/{rfi_id}")
+async def delete_rfi(rfi_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM project_rfis WHERE id = %s", (rfi_id,))
+    return {"success": True}
+
+
+# ═══════════════════════════════════════════════════════════════
+# PROJECT HUB — NOTES
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/projects/{project_id}/notes")
+async def list_notes(project_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM project_notes WHERE project_id = %s ORDER BY created_at DESC", (project_id,))
+        notes = cur.fetchall()
+    return {"notes": [dict(n) for n in notes]}
+
+@app.post("/api/projects/{project_id}/notes")
+async def create_note(project_id: int, request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO project_notes (project_id, content, author_name) VALUES (%s, %s, %s)",
+            (project_id, data.get("content"), user["name"])
+        )
+    return {"success": True}
+
+@app.delete("/api/notes/{note_id}")
+async def delete_note(note_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM project_notes WHERE id = %s", (note_id,))
+    return {"success": True}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)

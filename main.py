@@ -96,6 +96,11 @@ async def timecards_page():
     with open("timecards.html", "r") as f:
         return Response(content=f.read(), media_type="text/html")
 
+@app.get("/field")
+async def field_page():
+    with open("field.html", "r") as f:
+        return Response(content=f.read(), media_type="text/html")
+
 @app.get("/cart")
 async def cart_page():
     import os

@@ -640,15 +640,16 @@
 <body>
 
  <div class="top-bar">
-        <a href="/" class="top-logo">FIELDWISE<span> AI</span></a>
-        <div style="display:flex;align-items:center;gap:20px;">
-            <a href="/drawings" style="color:#6b7280;text-decoration:none;font-size:13px;">Drawings</a>
-            <a href="/timecards" style="color:#6b7280;text-decoration:none;font-size:13px;">Timecards</a>
-            <a href="/projects" style="color:#6b7280;text-decoration:none;font-size:13px;">Projects</a>
-            <div class="top-badge">FIELD TOOL</div>
-        </div>
+    <a href="/" class="top-logo">FIELDWISE<span> AI</span></a>
+    <div style="display:flex;align-items:center;gap:20px;">
+        <a href="/drawings" style="color:#6b7280;text-decoration:none;font-size:13px;">Drawings</a>
+        <a href="/timecards" style="color:#6b7280;text-decoration:none;font-size:13px;">Timecards</a>
+        <a href="/projects" style="color:#6b7280;text-decoration:none;font-size:13px;">Projects</a>
+        <a href="/cart" style="color:#6b7280;text-decoration:none;font-size:13px;">🛒 Cart</a>
+        <span id="nav-auth"><a href="/login" style="color:#6b7280;text-decoration:none;font-size:13px;">Login</a></span>
+        <div class="top-badge">FIELD TOOL</div>
     </div>
-
+</div>
     <div class="main">
 
         <!-- STEP 1: CAPTURE -->
@@ -1163,5 +1164,13 @@ formData.append('file', compressedBlob, photoFile.name);
 updateBottomBar();
     </script>
 <script src="/static/chatbot.js"></script>
+<script>
+const _user = JSON.parse(localStorage.getItem('fieldwise_user') || 'null');
+if (_user) {
+    document.getElementById('nav-auth').innerHTML = 
+        `<a href="/projects" style="color:#f0a500;font-size:13px;">${_user.name}</a>
+         <a href="#" onclick="localStorage.removeItem('fieldwise_token');localStorage.removeItem('fieldwise_user');window.location.reload()" style="color:#6b7280;font-size:11px;">Sign Out</a>`;
+}
+</script>
 </body>
 </html>

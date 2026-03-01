@@ -545,7 +545,7 @@
             <li><a href="/field">Field Tool</a></li>
             <li><a href="/projects">Projects</a></li>
             <li><a href="/cart">🛒 Cart</a></li>
-            <li><a href="/login">Login</a></li>
+            <li id="nav-auth"><a href="/login">Login</a></li>
             <li><a href="/drawings" class="nav-cta">Launch App →</a></li>
         </ul>
     </nav>
@@ -668,5 +668,13 @@
         <div class="footer-copy">© 2026 Fieldwise AI — Built for the field.</div>
     </footer>
 <script src="/static/chatbot.js"></script>
+<script>
+const _user = JSON.parse(localStorage.getItem('fieldwise_user') || 'null');
+if (_user) {
+    document.getElementById('nav-auth').innerHTML = 
+        `<a href="/projects" style="color:var(--accent)">${_user.name}</a>
+         <a href="#" onclick="localStorage.removeItem('fieldwise_token');localStorage.removeItem('fieldwise_user');window.location.reload()" style="color:var(--muted);font-size:12px;">Sign Out</a>`;
+}
+</script>
 </body>
 </html>

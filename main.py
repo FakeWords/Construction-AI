@@ -667,9 +667,47 @@ async def run_migration():
             created_at TIMESTAMP DEFAULT NOW()
         )
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS companies (
+            id SERIAL PRIMARY KEY,
+            owner_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            name VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS employees (
+            id SERIAL PRIMARY KEY,
+            company_id INTEGER REFERENCES companies(id) ON DELETE CASCADE,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            trade VARCHAR(100),
+            cost_code VARCHAR(50),
+            role VARCHAR(50) DEFAULT 'employee',
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS time_punches (
+            id SERIAL PRIMARY KEY,
+            employee_id INTEGER REFERENCES employees(id) ON DELETE CASCADE,
+            punch_type VARCHAR(20) NOT NULL,
+            punched_at TIMESTAMP DEFAULT NOW(),
+            note TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS time_off_requests (
+            id SERIAL PRIMARY KEY,
+            employee_id INTEGER REFERENCES employees(id) ON DELETE CASCADE,
+            request_type VARCHAR(50) NOT NULL,
+            request_date DATE NOT NULL,
+            note TEXT,
+            status VARCHAR(20) DEFAULT 'pending',
+            manager_note TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
     cur.close()
-    conn.close()
-    return {"success": True, "message": "Tables created"}
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)

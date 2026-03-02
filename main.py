@@ -21,7 +21,7 @@ from database import (
     create_project, get_user_projects, get_project_by_id,
     delete_project, share_project, get_shared_projects, update_last_login
 )
-from auth import hash_password, verify_password, create_token, get_current_user, get_optional_user
+from auth import hash_password, verify_password, create_token, decode_token, get_current_user, get_optional_user
 
 # NEC + Timecard
 from nec_validator import NECValidator, NECVersion, NEC_QUICK_REFERENCE
@@ -820,27 +820,31 @@ async def get_all_timesheets(request: Request):
 
 @app.post("/api/time-off")
 async def request_time_off(request: Request):
-    user = get_current_user(request)
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    payload = decode_token(token)
+    employee_id = payload.get("id")
     data = await request.json()
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute(
             """INSERT INTO time_off_requests (employee_id, request_type, request_date, note)
                VALUES (%s, %s, %s, %s) RETURNING *""",
-            (user["id"], data.get("request_type"), data.get("request_date"), data.get("note"))
+            (employee_id, data.get("request_type"), data.get("request_date"), data.get("note"))
         )
         return dict(cur.fetchone())
 
 @app.get("/api/time-off")
 async def get_time_off_requests(request: Request):
-    user = get_current_user(request)
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    payload = decode_token(token)
+    employee_id = payload.get("id")
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
             SELECT * FROM time_off_requests
             WHERE employee_id = %s
             ORDER BY created_at DESC
-        """, (user["id"],))
+        """, (employee_id,))
         requests = cur.fetchall()
     return {"requests": [dict(r) for r in requests]}
 

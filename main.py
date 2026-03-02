@@ -628,7 +628,43 @@ async def delete_note(note_id: int, request: Request):
         cur.execute("DELETE FROM project_notes WHERE id = %s", (note_id,))
     return {"success": True}
 
-
+@app.get("/admin/migrate")
+async def run_migration():
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_files (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                gcs_path VARCHAR(500) NOT NULL,
+                size INTEGER,
+                uploaded_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_rfis (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                rfi_number VARCHAR(50),
+                subject VARCHAR(500) NOT NULL,
+                description TEXT,
+                assigned_to VARCHAR(255),
+                due_date DATE,
+                status VARCHAR(50) DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_notes (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                content TEXT NOT NULL,
+                author_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+    return {"success": True, "message": "Tables created"}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)

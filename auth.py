@@ -29,11 +29,12 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
 
-def create_token(user_id: int) -> str:
-    payload = {
-        "user_id": user_id,
-        "exp": datetime.utcnow() + timedelta(days=TOKEN_EXPIRE_DAYS)
-    }
+def create_token(data) -> str:
+    if isinstance(data, int):
+        payload = {"user_id": data}
+    else:
+        payload = dict(data)
+    payload["exp"] = datetime.utcnow() + timedelta(days=TOKEN_EXPIRE_DAYS)
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 

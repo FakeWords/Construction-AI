@@ -735,9 +735,8 @@ async def employee_login(request: Request):
 async def create_punch(request: Request):
     data = await request.json()
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    from auth import get_current_user as _get
-    user = get_current_user(request)
-    employee_id = data.get("employee_id") or user.get("id")
+    payload = decode_token(token)
+    employee_id = payload.get("id")
     punch_type = data.get("punch_type")
     with get_db() as conn:
         cur = conn.cursor()
@@ -750,7 +749,9 @@ async def create_punch(request: Request):
 
 @app.get("/api/punch/today")
 async def get_today_punches(request: Request):
-    user = get_current_user(request)
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    payload = decode_token(token)
+    employee_id = payload.get("id")
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -758,7 +759,23 @@ async def get_today_punches(request: Request):
             WHERE employee_id = %s
             AND DATE(punched_at) = CURRENT_DATE
             ORDER BY punched_at ASC
-        """, (user["id"],))
+        """, (employee_id,))
+        punches = cur.fetchall()
+    return {"punches": [dict(p) for p in punches]}
+
+@app.get("/api/punch/week")
+async def get_week_punches(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    payload = decode_token(token)
+    employee_id = payload.get("id")
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT * FROM time_punches
+            WHERE employee_id = %s
+            AND punched_at >= date_trunc('week', CURRENT_DATE + INTERVAL '1 day') - INTERVAL '1 day'
+            ORDER BY punched_at ASC
+        """, (employee_id,))
         punches = cur.fetchall()
     return {"punches": [dict(p) for p in punches]}
 

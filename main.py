@@ -628,6 +628,227 @@ async def delete_note(note_id: int, request: Request):
         cur = conn.cursor()
         cur.execute("DELETE FROM project_notes WHERE id = %s", (note_id,))
     return {"success": True}
+# ═══════════════════════════════════════════════════════════════
+# LABOR HUB — COMPANY & EMPLOYEES
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/company/setup")
+async def setup_company(request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        existing = cur.fetchone()
+        if existing:
+            return dict(existing)
+        cur.execute(
+            "INSERT INTO companies (owner_user_id, name) VALUES (%s, %s) RETURNING *",
+            (user["id"], data.get("name"))
+        )
+        return dict(cur.fetchone())
+
+@app.get("/api/company")
+async def get_company(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        company = cur.fetchone()
+    if not company:
+        return {"company": None}
+    return {"company": dict(company)}
+
+@app.get("/api/company/employees")
+async def list_employees(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        company = cur.fetchone()
+        if not company:
+            return {"employees": []}
+        cur.execute("SELECT * FROM employees WHERE company_id = %s ORDER BY name", (company["id"],))
+        employees = cur.fetchall()
+    return {"employees": [dict(e) for e in employees]}
+
+@app.post("/api/company/employees")
+async def add_employee(request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        company = cur.fetchone()
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+        from auth import hash_password
+        cur.execute(
+            """INSERT INTO employees (company_id, name, email, password_hash, trade, cost_code)
+               VALUES (%s, %s, %s, %s, %s, %s) RETURNING *""",
+            (company["id"], data.get("name"), data.get("email"),
+             hash_password(data.get("password")), data.get("trade"), data.get("cost_code"))
+        )
+        return dict(cur.fetchone())
+
+@app.delete("/api/company/employees/{employee_id}")
+async def remove_employee(employee_id: int, request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM employees WHERE id = %s", (employee_id,))
+    return {"success": True}
+
+# ═══════════════════════════════════════════════════════════════
+# LABOR HUB — EMPLOYEE AUTH
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/employee/login")
+async def employee_login(request: Request):
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM employees WHERE email = %s", (data.get("email"),))
+        emp = cur.fetchone()
+    if not emp:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    from auth import verify_password, create_token
+    if not verify_password(data.get("password"), emp["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_token({"id": emp["id"], "name": emp["name"], "email": emp["email"], "role": "employee", "company_id": emp["company_id"]})
+    return {"token": token, "employee": dict(emp)}
+
+# ═══════════════════════════════════════════════════════════════
+# LABOR HUB — TIME PUNCHES
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/punch")
+async def create_punch(request: Request):
+    data = await request.json()
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    from auth import get_current_user as _get
+    user = get_current_user(request)
+    employee_id = data.get("employee_id") or user.get("id")
+    punch_type = data.get("punch_type")
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO time_punches (employee_id, punch_type) VALUES (%s, %s) RETURNING *",
+            (employee_id, punch_type)
+        )
+        punch = cur.fetchone()
+    return dict(punch)
+
+@app.get("/api/punch/today")
+async def get_today_punches(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT * FROM time_punches
+            WHERE employee_id = %s
+            AND DATE(punched_at) = CURRENT_DATE
+            ORDER BY punched_at ASC
+        """, (user["id"],))
+        punches = cur.fetchall()
+    return {"punches": [dict(p) for p in punches]}
+
+@app.get("/api/punch/week")
+async def get_week_punches(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT * FROM time_punches
+            WHERE employee_id = %s
+            AND punched_at >= date_trunc('week', CURRENT_DATE + INTERVAL '1 day') - INTERVAL '1 day'
+            ORDER BY punched_at ASC
+        """, (user["id"],))
+        punches = cur.fetchall()
+    return {"punches": [dict(p) for p in punches]}
+
+@app.get("/api/manager/timesheets")
+async def get_all_timesheets(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        company = cur.fetchone()
+        if not company:
+            return {"employees": []}
+        cur.execute("""
+            SELECT e.id, e.name, e.trade, e.cost_code,
+                   tp.punch_type, tp.punched_at
+            FROM employees e
+            LEFT JOIN time_punches tp ON e.id = tp.employee_id
+            AND tp.punched_at >= date_trunc('week', CURRENT_DATE + INTERVAL '1 day') - INTERVAL '1 day'
+            WHERE e.company_id = %s
+            ORDER BY e.name, tp.punched_at ASC
+        """, (company["id"],))
+        rows = cur.fetchall()
+    return {"timesheets": [dict(r) for r in rows]}
+
+# ═══════════════════════════════════════════════════════════════
+# LABOR HUB — TIME OFF REQUESTS
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/time-off")
+async def request_time_off(request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO time_off_requests (employee_id, request_type, request_date, note)
+               VALUES (%s, %s, %s, %s) RETURNING *""",
+            (user["id"], data.get("request_type"), data.get("request_date"), data.get("note"))
+        )
+        return dict(cur.fetchone())
+
+@app.get("/api/time-off")
+async def get_time_off_requests(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT * FROM time_off_requests
+            WHERE employee_id = %s
+            ORDER BY created_at DESC
+        """, (user["id"],))
+        requests = cur.fetchall()
+    return {"requests": [dict(r) for r in requests]}
+
+@app.get("/api/manager/time-off")
+async def get_all_time_off(request: Request):
+    user = get_current_user(request)
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM companies WHERE owner_user_id = %s", (user["id"],))
+        company = cur.fetchone()
+        if not company:
+            return {"requests": []}
+        cur.execute("""
+            SELECT tor.*, e.name as employee_name
+            FROM time_off_requests tor
+            JOIN employees e ON tor.employee_id = e.id
+            WHERE e.company_id = %s
+            ORDER BY tor.created_at DESC
+        """, (company["id"],))
+        requests = cur.fetchall()
+    return {"requests": [dict(r) for r in requests]}
+
+@app.patch("/api/manager/time-off/{request_id}")
+async def update_time_off(request_id: int, request: Request):
+    user = get_current_user(request)
+    data = await request.json()
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE time_off_requests
+            SET status = %s, manager_note = %s, updated_at = NOW()
+            WHERE id = %s
+        """, (data.get("status"), data.get("manager_note"), request_id))
+    return {"success": True}
 
 @app.get("/admin/migrate")
 async def run_migration():

@@ -520,6 +520,7 @@ async def upload_project_file(project_id: int, request: Request, file: UploadFil
         blob = bucket.blob(gcs_path)
         blob.upload_from_string(contents, content_type=file.content_type)
     except Exception as e:
+        print(f"[GCS ERROR] {str(e)}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     with get_db() as conn:
         cur = conn.cursor()

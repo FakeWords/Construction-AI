@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Hub — Fieldwise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080a0d;
+            --surface: #0e1117;
+            --surface2: #141820;
+            --surface3: #1a2030;
+            --border: #1e2738;
+            --border2: #253048;
+            --accent: #f0a500;
+            --accent-dim: rgba(240,165,0,0.08);
+            --accent-border: rgba(240,165,0,0.2);
+            --text: #d4d8e0;
+            --text-bright: #eef0f4;
+            --muted: #5a6478;
+            --muted2: #8892a4;
+            --green: #2ecc71;
+            --green-dim: rgba(46,204,113,0.08);
+            --red: #e74c3c;
+            --red-dim: rgba(231,76,60,0.08);
+            --blue: #3b7dd8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; font-size: 14px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; height: 60px;
+            background: rgba(8,10,13,0.96); backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .nav-logo-text { font-size: 15px; font-weight: 700; letter-spacing: 3px; color: var(--text-bright); text-transform: uppercase; }
+        .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+        .nav-links a { color: var(--muted2); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 4px; transition: all 0.15s; }
+        .nav-links a:hover { color: var(--text-bright); background: var(--surface2); }
+        .nav-links a.active { color: var(--accent); background: var(--accent-dim); }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-user-name { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); }
+        .btn-signout { font-size: 12px; color: var(--muted2); background: none; border: 1px solid var(--border2); padding: 5px 10px; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; }
+        .btn-signout:hover { border-color: var(--red); color: var(--red); }
+
+        .main { max-width: 1100px; margin: 0 auto; padding: 80px 32px 60px; }
+
+        .page-header { margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; }
+        .page-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .page-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--accent); }
+        .page-title { font-size: 28px; font-weight: 700; color: var(--text-bright); letter-spacing: -0.5px; }
+
+        .btn-primary { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #000; border: none; padding: 9px 18px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.15s; }
+        .btn-primary:hover { background: #d49300; }
+        .btn-secondary { display: inline-flex; align-items: center; gap: 6px; background: none; color: var(--text); border: 1px solid var(--border2); padding: 9px 18px; border-radius: 4px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 3px; cursor: pointer; border: none; font-family: 'Inter', sans-serif; font-weight: 500; transition: all 0.15s; }
+        .btn-approve { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+        .btn-approve:hover { background: rgba(46,204,113,0.15); }
+        .btn-deny { background: var(--red-dim); color: var(--red); border: 1px solid rgba(231,76,60,0.2); }
+        .btn-deny:hover { background: rgba(231,76,60,0.15); }
+        .btn-del { background: none; color: var(--muted); border: 1px solid var(--border); }
+        .btn-del:hover { color: var(--red); border-color: var(--red); }
+
+        /* SETUP CARD */
+        .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 40px; text-align: center; max-width: 480px; margin: 60px auto; }
+        .setup-icon { font-size: 40px; margin-bottom: 16px; }
+        .setup-title { font-size: 20px; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
+        .setup-sub { color: var(--muted2); font-size: 14px; margin-bottom: 24px; }
+        .setup-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-bright); padding: 10px 14px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; }
+        .setup-input:focus { border-color: var(--accent); }
+
+        /* TABS */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+        .tab { padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--muted2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 8px; }
+        .tab.active .tab-count { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* LIVE BOARD */
+        .live-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 24px; }
+        .emp-card { background: var(--surface); padding: 16px; transition: background 0.15s; }
+        .emp-card:hover { background: var(--surface2); }
+        .emp-status-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-dot.in { background: var(--green); box-shadow: 0 0 6px rgba(46,204,113,0.5); }
+        .status-dot.out { background: var(--muted); }
+        .status-dot.lunch { background: var(--accent); }
+        .emp-name { font-size: 14px; font-weight: 600; color: var(--text-bright); margin-bottom: 3px; }
+        .emp-trade { font-size: 11px; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; }
+        .emp-hours { margin-top: 10px; display: flex; gap: 12px; }
+        .emp-hour-item { }
+        .emp-hour-num { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 500; color: var(--accent); }
+        .emp-hour-label { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.5px; }
+        .emp-punch-time { font-size: 11px; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; margin-top: 8px; }
+
+        /* EMPLOYEE TABLE */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .section-title { font-size: 13px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; }
+
+        table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        th { padding: 10px 14px; text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface2); }
+        td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--surface2); }
+
+        .badge { display: inline-flex; align-items: center; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
+        .badge-pending { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
+        .badge-approved { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+        .badge-denied { background: var(--red-dim); color: var(--red); border: 1px solid rgba(231,76,60,0.2); }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--surface); border: 1px solid var(--border); padding: 32px; width: 100%; max-width: 480px; border-radius: 6px; }
+        .modal-title { font-size: 18px; font-weight: 700; color: var(--text-bright); margin-bottom: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .form-input, .form-select { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-bright); padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 13px; border-radius: 4px; outline: none; }
+        .form-input:focus, .form-select:focus { border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancel { flex: 1; padding: 10px; background: none; color: var(--muted2); border: 1px solid var(--border); cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; }
+        .btn-confirm { flex: 2; padding: 10px; background: var(--accent); color: #000; border: none; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; }
+        .btn-confirm:hover { background: #d49300; }
+
+        .empty-state { text-align: center; padding: 48px; color: var(--muted2); font-size: 13px; }
+        .empty-icon { font-size: 32px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-icon"></div>
+        <span class="nav-logo-text">FIELDWISE</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="/drawings">Drawing Analyzer</a></li>
+        <li><a href="/timecards">Time Cards</a></li>
+        <li><a href="/field">Field Tool</a></li>
+        <li><a href="/projects">Projects</a></li>
+        <li><a href="/labor" class="active">Labor Hub</a></li>
+    </ul>
+    <div class="nav-right" id="navRight"></div>
+</nav>
+
+<div class="main">
+    <!-- SETUP STATE -->
+    <div id="setup-state" style="display:none">
+        <div class="setup-card">
+            <div class="setup-icon">🏗️</div>
+            <div class="setup-title">Set Up Your Company</div>
+            <div class="setup-sub">Create your company to start managing employee time tracking.</div>
+            <input type="text" class="setup-input" id="company-name-input" placeholder="e.g. Arroyo Electric Inc.">
+            <button class="btn-primary" style="width:100%;justify-content:center" onclick="setupCompany()">Create Company →</button>
+        </div>
+    </div>
+
+    <!-- MAIN HUB -->
+    <div id="hub-state" style="display:none">
+        <div class="page-header">
+            <div>
+                <div class="page-eyebrow">Labor Hub</div>
+                <div class="page-title" id="company-name-display">Company</div>
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn-secondary" onclick="exportTimesheets()">⬇ Export Timesheets</button>
+                <button class="btn-primary" onclick="openAddEmployee()">+ Add Employee</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('live')" id="tab-live">🟢 Live Board <span class="tab-count" id="live-count">0</span></div>
+            <div class="tab" onclick="showTab('employees')" id="tab-employees">👷 Employees <span class="tab-count" id="emp-count">0</span></div>
+            <div class="tab" onclick="showTab('timeoff')" id="tab-timeoff">📅 Time Off <span class="tab-count" id="timeoff-count">0</span></div>
+        </div>
+
+        <!-- LIVE BOARD -->
+        <div class="tab-panel active" id="panel-live">
+            <div class="live-grid" id="live-grid">
+                <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👷</div>No employees yet.</div>
+            </div>
+        </div>
+
+        <!-- EMPLOYEES -->
+        <div class="tab-panel" id="panel-employees">
+            <div id="employees-table"></div>
+        </div>
+
+        <!-- TIME OFF -->
+        <div class="tab-panel" id="panel-timeoff">
+            <div id="timeoff-table"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Employee Modal -->
+<div class="modal-overlay" id="add-emp-modal">
+    <div class="modal">
+        <div class="modal-title">Add Employee</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="emp-name" placeholder="John Smith">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Trade</label>
+                <input type="text" class="form-input" id="emp-trade" placeholder="Electrician">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="emp-email" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cost Code</label>
+                <input type="text" class="form-input" id="emp-cost" placeholder="16-100">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Temporary Password</label>
+            <input type="text" class="form-input" id="emp-password" placeholder="They can change after first login">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeAddEmployee()">Cancel</button>
+            <button class="btn-confirm" onclick="addEmployee()">Add Employee →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('fieldwise_token');
+    const user = JSON.parse(localStorage.getItem('fieldwise_user') || 'null');
+    if (!token) window.location.href = '/login';
+
+    const navRight = document.getElementById('navRight');
+    navRight.innerHTML = `<span class="nav-user-name">${user?.name || ''}</span><button class="btn-signout" onclick="signOut()">Sign Out</button>`;
+    function signOut() { localStorage.removeItem('fieldwise_token'); localStorage.removeItem('fieldwise_user'); window.location.href = '/login'; }
+
+    let company = null;
+    let employees = [];
+    let timeOffRequests = [];
+
+    async function init() {
+        const res = await fetch('/api/company', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (!data.company) {
+            document.getElementById('setup-state').style.display = 'block';
+        } else {
+            company = data.company;
+            document.getElementById('hub-state').style.display = 'block';
+            document.getElementById('company-name-display').textContent = company.name;
+            await Promise.all([loadEmployees(), loadTimeOff()]);
+        }
+    }
+
+    async function setupCompany() {
+        const name = document.getElementById('company-name-input').value.trim();
+        if (!name) return;
+        const res = await fetch('/api/company/setup', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+        company = await res.json();
+        document.getElementById('setup-state').style.display = 'none';
+        document.getElementById('hub-state').style.display = 'block';
+        document.getElementById('company-name-display').textContent = company.name;
+        await loadEmployees();
+    }
+
+    async function loadEmployees() {
+        const res = await fetch('/api/company/employees', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        employees = data.employees || [];
+        document.getElementById('emp-count').textContent = employees.length;
+        await loadLiveBoard();
+        renderEmployeesTable();
+    }
+
+    async function loadLiveBoard() {
+        const grid = document.getElementById('live-grid');
+        if (!employees.length) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👷</div>No employees yet — add one above.</div>';
+            document.getElementById('live-count').textContent = '0';
+            return;
+        }
+
+        // Load today's punches for all employees
+        const punchRes = await fetch('/api/manager/timesheets', { headers: { 'Authorization': `Bearer ${token}` } });
+        const punchData = await punchRes.json();
+        const rows = punchData.timesheets || [];
+
+        // Build punch map per employee
+        const punchMap = {};
+        rows.forEach(r => {
+            if (!r.punch_type) return;
+            if (!punchMap[r.id]) punchMap[r.id] = [];
+            punchMap[r.id].push(r);
+        });
+
+        let clockedIn = 0;
+
+        grid.innerHTML = employees.map(emp => {
+            const punches = punchMap[emp.id] || [];
+            const todayPunches = punches.filter(p => {
+                if (!p.punched_at) return false;
+                const d = new Date(p.punched_at);
+                const today = new Date();
+                return d.toDateString() === today.toDateString();
+            });
+
+            const lastPunch = todayPunches[todayPunches.length - 1];
+            let statusClass = 'out';
+            let statusText = 'Off Site';
+            let clockInTime = '—';
+
+            if (lastPunch) {
+                if (lastPunch.punch_type === 'clock_in') { statusClass = 'in'; statusText = 'On Site'; clockedIn++; }
+                else if (lastPunch.punch_type === 'lunch_out') { statusClass = 'lunch'; statusText = 'At Lunch'; }
+                else if (lastPunch.punch_type === 'lunch_in') { statusClass = 'in'; statusText = 'On Site'; clockedIn++; }
+                else if (lastPunch.punch_type === 'clock_out') { statusClass = 'out'; statusText = 'Off Site'; }
+            }
+
+            const clockIn = todayPunches.find(p => p.punch_type === 'clock_in');
+            if (clockIn) clockInTime = new Date(clockIn.punched_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+            // Calculate today's hours
+            let todayHrs = 0;
+            let weekHrs = calcWeekHours(punches);
+            todayHrs = calcDayHours(todayPunches);
+
+            return `<div class="emp-card">
+                <div class="emp-status-row">
+                    <div class="status-dot ${statusClass}"></div>
+                    <span style="font-size:11px;color:var(--muted2)">${statusText}</span>
+                </div>
+                <div class="emp-name">${emp.name}</div>
+                <div class="emp-trade">${emp.trade || 'General'} ${emp.cost_code ? '· ' + emp.cost_code : ''}</div>
+                <div class="emp-hours">
+                    <div class="emp-hour-item">
+                        <div class="emp-hour-num">${todayHrs.toFixed(1)}</div>
+                        <div class="emp-hour-label">Today</div>
+                    </div>
+                    <div class="emp-hour-item">
+                        <div class="emp-hour-num">${weekHrs.toFixed(1)}</div>
+                        <div class="emp-hour-label">This Week</div>
+                    </div>
+                </div>
+                <div class="emp-punch-time">In: ${clockInTime}</div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('live-count').textContent = clockedIn + ' on site';
+    }
+
+    function calcDayHours(punches) {
+        let total = 0;
+        let clockIn = null;
+        let lunchOut = null;
+        punches.forEach(p => {
+            const t = new Date(p.punched_at);
+            if (p.punch_type === 'clock_in') clockIn = t;
+            else if (p.punch_type === 'lunch_out') { if (clockIn) { total += (t - clockIn) / 3600000; clockIn = null; } lunchOut = t; }
+            else if (p.punch_type === 'lunch_in') { clockIn = t; lunchOut = null; }
+            else if (p.punch_type === 'clock_out') { if (clockIn) { total += (t - clockIn) / 3600000; clockIn = null; } }
+        });
+        if (clockIn) total += (new Date() - clockIn) / 3600000;
+        return Math.max(0, total);
+    }
+
+    function calcWeekHours(punches) {
+        const monday = new Date();
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        monday.setHours(0,0,0,0);
+        const weekPunches = punches.filter(p => p.punched_at && new Date(p.punched_at) >= monday);
+        return calcDayHours(weekPunches);
+    }
+
+    function renderEmployeesTable() {
+        const el = document.getElementById('employees-table');
+        if (!employees.length) {
+            el.innerHTML = '<div class="empty-state"><div class="empty-icon">👷</div>No employees yet — add one above.</div>';
+            return;
+        }
+        el.innerHTML = `<table>
+            <thead><tr><th>Name</th><th>Trade</th><th>Cost Code</th><th>Email</th><th></th></tr></thead>
+            <tbody>${employees.map(e => `<tr>
+                <td style="font-weight:600;color:var(--text-bright)">${e.name}</td>
+                <td style="color:var(--muted2)">${e.trade || '—'}</td>
+                <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent)">${e.cost_code || '—'}</span></td>
+                <td style="color:var(--muted2);font-size:12px">${e.email}</td>
+                <td><button class="btn-sm btn-del" onclick="removeEmployee(${e.id})">Remove</button></td>
+            </tr>`).join('')}</tbody>
+        </table>`;
+    }
+
+    async function loadTimeOff() {
+        const res = await fetch('/api/manager/time-off', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        timeOffRequests = data.requests || [];
+        const pending = timeOffRequests.filter(r => r.status === 'pending').length;
+        document.getElementById('timeoff-count').textContent = pending + ' pending';
+        renderTimeOffTable();
+    }
+
+    function renderTimeOffTable() {
+        const el = document.getElementById('timeoff-table');
+        if (!timeOffRequests.length) {
+            el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>No time off requests.</div>';
+            return;
+        }
+        const statusClass = { pending: 'badge-pending', approved: 'badge-approved', denied: 'badge-denied' };
+        el.innerHTML = `<table>
+            <thead><tr><th>Employee</th><th>Type</th><th>Date</th><th>Note</th><th>Status</th><th></th></tr></thead>
+            <tbody>${timeOffRequests.map(r => {
+                const date = new Date(r.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return `<tr>
+                    <td style="font-weight:600;color:var(--text-bright)">${r.employee_name}</td>
+                    <td><span class="badge badge-pending">${r.request_type.toUpperCase()}</span></td>
+                    <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${date}</td>
+                    <td style="color:var(--muted2)">${r.note || '—'}</td>
+                    <td><span class="badge ${statusClass[r.status] || 'badge-pending'}">${r.status.toUpperCase()}</span></td>
+                    <td style="display:flex;gap:6px">
+                        ${r.status === 'pending' ? `
+                            <button class="btn-sm btn-approve" onclick="updateTimeOff(${r.id},'approved')">Approve</button>
+                            <button class="btn-sm btn-deny" onclick="updateTimeOff(${r.id},'denied')">Deny</button>
+                        ` : '—'}
+                    </td>
+                </tr>`;
+            }).join('')}</tbody>
+        </table>`;
+    }
+
+    async function updateTimeOff(id, status) {
+        await fetch(`/api/manager/time-off/${id}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+        await loadTimeOff();
+    }
+
+    function showTab(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`tab-${name}`).classList.add('active');
+        document.getElementById(`panel-${name}`).classList.add('active');
+    }
+
+    function openAddEmployee() { document.getElementById('add-emp-modal').classList.add('active'); }
+    function closeAddEmployee() { document.getElementById('add-emp-modal').classList.remove('active'); }
+
+    async function addEmployee() {
+        const name = document.getElementById('emp-name').value.trim();
+        const email = document.getElementById('emp-email').value.trim();
+        const password = document.getElementById('emp-password').value.trim();
+        if (!name || !email || !password) { alert('Name, email, and password required'); return; }
+        await fetch('/api/company/employees', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, trade: document.getElementById('emp-trade').value, cost_code: document.getElementById('emp-cost').value })
+        });
+        closeAddEmployee();
+        ['emp-name','emp-email','emp-password','emp-trade','emp-cost'].forEach(id => document.getElementById(id).value = '');
+        await loadEmployees();
+    }
+
+    async function removeEmployee(id) {
+        if (!confirm('Remove this employee?')) return;
+        await fetch(`/api/company/employees/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        await loadEmployees();
+    }
+
+    function exportTimesheets() {
+        alert('Excel export coming next session!');
+    }
+
+    // Auto-refresh live board every 60 seconds
+    setInterval(loadLiveBoard, 60000);
+
+    init();
+</script>
+<script src="/static/chatbot.js"></script>
+</body>
+</html>

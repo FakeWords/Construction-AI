@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Clock — Fieldwise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080a0d;
+            --surface: #0e1117;
+            --surface2: #141820;
+            --border: #1e2738;
+            --border2: #253048;
+            --accent: #f0a500;
+            --accent-dim: rgba(240,165,0,0.08);
+            --text: #d4d8e0;
+            --text-bright: #eef0f4;
+            --muted: #5a6478;
+            --muted2: #8892a4;
+            --green: #2ecc71;
+            --green-dim: rgba(46,204,113,0.1);
+            --red: #e74c3c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; font-size: 14px; }
+
+        /* LOGIN */
+        .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; width: 100%; max-width: 380px; }
+        .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+        .login-logo-icon { width: 28px; height: 28px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .login-logo-text { font-size: 15px; font-weight: 700; letter-spacing: 3px; color: var(--text-bright); text-transform: uppercase; }
+        .login-title { font-size: 20px; font-weight: 700; color: var(--text-bright); margin-bottom: 6px; }
+        .login-sub { color: var(--muted2); font-size: 13px; margin-bottom: 24px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-bright); padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border-radius: 4px; outline: none; }
+        .form-input:focus { border-color: var(--accent); }
+        .btn-login { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 4px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; margin-top: 4px; }
+        .btn-login:hover { background: #d49300; }
+        .login-error { color: var(--red); font-size: 12px; margin-top: 10px; display: none; }
+
+        /* PUNCH PAGE */
+        .punch-wrap { display: none; max-width: 480px; margin: 0 auto; padding: 24px 20px 60px; }
+
+        .punch-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .punch-logo { display: flex; align-items: center; gap: 8px; }
+        .punch-logo-icon { width: 24px; height: 24px; background: var(--accent); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .punch-logo-text { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--text-bright); text-transform: uppercase; }
+        .btn-logout { font-size: 12px; color: var(--muted2); background: none; border: 1px solid var(--border2); padding: 5px 10px; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; }
+
+        /* EMPLOYEE INFO */
+        .emp-info { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-bottom: 16px; }
+        .emp-name { font-size: 22px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }
+        .emp-meta { font-size: 12px; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; }
+
+        /* HOURS DISPLAY */
+        .hours-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 16px; }
+        .hour-cell { background: var(--surface); padding: 20px; text-align: center; }
+        .hour-num { font-family: 'IBM Plex Mono', monospace; font-size: 36px; font-weight: 500; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+        .hour-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* PUNCH TIMES */
+        .punch-times { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+        .punch-time-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .punch-time-row:last-child { border-bottom: none; }
+        .punch-time-label { font-size: 12px; color: var(--muted2); font-weight: 500; }
+        .punch-time-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-bright); }
+        .punch-time-val.set { color: var(--green); }
+
+        /* PUNCH BUTTONS */
+        .punch-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .btn-punch { padding: 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .btn-punch:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+        .btn-punch:not(:disabled):hover { transform: translateY(-2px); }
+        .btn-punch-icon { font-size: 20px; }
+        .btn-clock-in { background: var(--green); color: #000; }
+        .btn-clock-out { background: var(--red); color: #fff; }
+        .btn-lunch-out { background: var(--accent); color: #000; }
+        .btn-lunch-in { background: var(--surface2); color: var(--text-bright); border: 1px solid var(--border2); }
+
+        /* STATUS BAR */
+        .status-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .status-indicator.in { background: var(--green); box-shadow: 0 0 8px rgba(46,204,113,0.5); }
+        .status-indicator.out { background: var(--muted); }
+        .status-indicator.lunch { background: var(--accent); box-shadow: 0 0 8px rgba(240,165,0,0.5); }
+        .status-text { font-size: 13px; font-weight: 500; color: var(--text-bright); }
+        .status-time { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted2); margin-left: auto; }
+
+        /* TIME OFF */
+        .section-title { font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .timeoff-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 16px; }
+        .timeoff-form { padding: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-select { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-bright); padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 13px; border-radius: 4px; outline: none; }
+        .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-bright); padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 13px; border-radius: 4px; outline: none; resize: none; min-height: 60px; }
+        .btn-submit-req { width: 100%; padding: 10px; background: var(--surface2); color: var(--text); border: 1px solid var(--border2); border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; margin-top: 10px; transition: all 0.15s; }
+        .btn-submit-req:hover { border-color: var(--accent); color: var(--accent); }
+
+        .request-list { padding: 0 16px 16px; }
+        .request-item { padding: 10px 0; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .request-info { font-size: 12px; color: var(--muted2); }
+        .request-type { font-weight: 600; color: var(--text-bright); margin-bottom: 2px; font-size: 13px; }
+        .badge { display: inline-flex; font-size: 10px; padding: 2px 7px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; }
+        .badge-pending { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(240,165,0,0.2); }
+        .badge-approved { background: var(--green-dim); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+        .badge-denied { background: rgba(231,76,60,0.08); color: var(--red); border: 1px solid rgba(231,76,60,0.2); }
+
+        /* LIVE CLOCK */
+        .live-clock { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted2); text-align: center; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-logo-icon"></div>
+            <span class="login-logo-text">FIELDWISE</span>
+        </div>
+        <div class="login-title">Employee Time Clock</div>
+        <div class="login-sub">Sign in to clock in and track your hours.</div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="login-email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="login-password" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button class="btn-login" onclick="login()">Sign In →</button>
+        <div class="login-error" id="login-error">Invalid email or password.</div>
+    </div>
+</div>
+
+<!-- PUNCH PAGE -->
+<div class="punch-wrap" id="punch-wrap">
+    <div class="punch-header">
+        <div class="punch-logo">
+            <div class="punch-logo-icon"></div>
+            <span class="punch-logo-text">FIELDWISE</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+
+    <div class="live-clock" id="live-clock"></div>
+
+    <div class="emp-info">
+        <div class="emp-name" id="emp-name">—</div>
+        <div class="emp-meta" id="emp-meta">—</div>
+    </div>
+
+    <div class="hours-grid">
+        <div class="hour-cell">
+            <div class="hour-num" id="today-hours">0.0</div>
+            <div class="hour-label">Today (hrs)</div>
+        </div>
+        <div class="hour-cell">
+            <div class="hour-num" id="week-hours">0.0</div>
+            <div class="hour-label">This Week (hrs)</div>
+        </div>
+    </div>
+
+    <div class="status-bar" id="status-bar">
+        <div class="status-indicator out" id="status-dot"></div>
+        <div class="status-text" id="status-text">Off Site</div>
+        <div class="status-time" id="status-time"></div>
+    </div>
+
+    <div class="punch-times">
+        <div class="punch-time-row">
+            <span class="punch-time-label">Clock In</span>
+            <span class="punch-time-val" id="time-clock-in">—</span>
+        </div>
+        <div class="punch-time-row">
+            <span class="punch-time-label">Lunch Out</span>
+            <span class="punch-time-val" id="time-lunch-out">—</span>
+        </div>
+        <div class="punch-time-row">
+            <span class="punch-time-label">Lunch In</span>
+            <span class="punch-time-val" id="time-lunch-in">—</span>
+        </div>
+        <div class="punch-time-row">
+            <span class="punch-time-label">Clock Out</span>
+            <span class="punch-time-val" id="time-clock-out">—</span>
+        </div>
+    </div>
+
+    <div class="punch-buttons">
+        <button class="btn-punch btn-clock-in" id="btn-clock-in" onclick="punch('clock_in')">
+            <span class="btn-punch-icon">▶</span> Clock In
+        </button>
+        <button class="btn-punch btn-clock-out" id="btn-clock-out" onclick="punch('clock_out')" disabled>
+            <span class="btn-punch-icon">■</span> Clock Out
+        </button>
+        <button class="btn-punch btn-lunch-out" id="btn-lunch-out" onclick="punch('lunch_out')" disabled>
+            <span class="btn-punch-icon">🍽</span> Lunch Out
+        </button>
+        <button class="btn-punch btn-lunch-in" id="btn-lunch-in" onclick="punch('lunch_in')" disabled>
+            <span class="btn-punch-icon">↩</span> Lunch In
+        </button>
+    </div>
+
+    <!-- TIME OFF -->
+    <div class="section-title">Time Off Requests</div>
+    <div class="timeoff-card">
+        <div class="timeoff-form">
+            <div class="form-row" style="margin-bottom:10px">
+                <div>
+                    <div class="form-label" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Type</div>
+                    <select class="form-select" id="req-type">
+                        <option value="PTO">PTO</option>
+                        <option value="Sick">Sick</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="form-label" style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Date</div>
+                    <input type="date" class="form-input" id="req-date">
+                </div>
+            </div>
+            <textarea class="form-textarea" id="req-note" placeholder="Optional note to manager..."></textarea>
+            <button class="btn-submit-req" onclick="submitTimeOff()">Submit Request →</button>
+        </div>
+        <div class="request-list" id="request-list"></div>
+    </div>
+</div>
+
+<script>
+    let empToken = localStorage.getItem('emp_token');
+    let empData = JSON.parse(localStorage.getItem('emp_data') || 'null');
+    let todayPunches = [];
+    let weekPunches = [];
+
+    if (empToken && empData) showPunchPage();
+
+    async function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        try {
+            const res = await fetch('/api/employee/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            empToken = data.token;
+            empData = data.employee;
+            localStorage.setItem('emp_token', empToken);
+            localStorage.setItem('emp_data', JSON.stringify(empData));
+            showPunchPage();
+        } catch(e) {
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('emp_token');
+        localStorage.removeItem('emp_data');
+        document.getElementById('punch-wrap').style.display = 'none';
+        document.getElementById('login-wrap').style.display = 'flex';
+    }
+
+    function showPunchPage() {
+        document.getElementById('login-wrap').style.display = 'none';
+        document.getElementById('punch-wrap').style.display = 'block';
+        document.getElementById('emp-name').textContent = empData.name;
+        document.getElementById('emp-meta').textContent = `${empData.trade || 'General'} ${empData.cost_code ? '· ' + empData.cost_code : ''}`;
+
+        // Set default date for time off
+        document.getElementById('req-date').value = new Date().toISOString().split('T')[0];
+
+        loadPunches();
+        loadTimeOffRequests();
+        startClock();
+    }
+
+    async function loadPunches() {
+        const [todayRes, weekRes] = await Promise.all([
+            fetch('/api/punch/today', { headers: { 'Authorization': `Bearer ${empToken}` } }),
+            fetch('/api/punch/week', { headers: { 'Authorization': `Bearer ${empToken}` } })
+        ]);
+        const todayData = await todayRes.json();
+        const weekData = await weekRes.json();
+        todayPunches = todayData.punches || [];
+        weekPunches = weekData.punches || [];
+        renderPunches();
+    }
+
+    function renderPunches() {
+        const fmt = ts => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+        const clockIn = todayPunches.find(p => p.punch_type === 'clock_in');
+        const lunchOut = todayPunches.find(p => p.punch_type === 'lunch_out');
+        const lunchIn = todayPunches.find(p => p.punch_type === 'lunch_in');
+        const clockOut = todayPunches.find(p => p.punch_type === 'clock_out');
+
+        const setTime = (id, punch) => {
+            const el = document.getElementById(id);
+            if (punch) { el.textContent = fmt(punch.punched_at); el.classList.add('set'); }
+            else { el.textContent = '—'; el.classList.remove('set'); }
+        };
+
+        setTime('time-clock-in', clockIn);
+        setTime('time-lunch-out', lunchOut);
+        setTime('time-lunch-in', lunchIn);
+        setTime('time-clock-out', clockOut);
+
+        // Determine state
+        const lastPunch = todayPunches[todayPunches.length - 1];
+        const state = lastPunch?.punch_type || 'none';
+
+        const btnCI = document.getElementById('btn-clock-in');
+        const btnCO = document.getElementById('btn-clock-out');
+        const btnLO = document.getElementById('btn-lunch-out');
+        const btnLI = document.getElementById('btn-lunch-in');
+
+        btnCI.disabled = state !== 'none';
+        btnCO.disabled = !['clock_in', 'lunch_in'].includes(state);
+        btnLO.disabled = state !== 'clock_in' && state !== 'lunch_in';
+        btnLI.disabled = state !== 'lunch_out';
+
+        // Status
+        const dot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const statusTime = document.getElementById('status-time');
+        dot.className = 'status-indicator';
+
+        if (state === 'clock_in' || state === 'lunch_in') {
+            dot.classList.add('in'); statusText.textContent = 'On Site';
+            statusTime.textContent = 'Since ' + fmt(lastPunch.punched_at);
+        } else if (state === 'lunch_out') {
+            dot.classList.add('lunch'); statusText.textContent = 'At Lunch';
+            statusTime.textContent = 'Since ' + fmt(lastPunch.punched_at);
+        } else if (state === 'clock_out') {
+            dot.classList.add('out'); statusText.textContent = 'Clocked Out';
+            statusTime.textContent = fmt(lastPunch.punched_at);
+        } else {
+            dot.classList.add('out'); statusText.textContent = 'Not Clocked In'; statusTime.textContent = '';
+        }
+
+        // Hours
+        document.getElementById('today-hours').textContent = calcHours(todayPunches).toFixed(1);
+        document.getElementById('week-hours').textContent = calcHours(weekPunches).toFixed(1);
+    }
+
+    function calcHours(punches) {
+        let total = 0; let clockIn = null;
+        punches.forEach(p => {
+            const t = new Date(p.punched_at);
+            if (p.punch_type === 'clock_in') clockIn = t;
+            else if (p.punch_type === 'lunch_out') { if (clockIn) { total += (t - clockIn) / 3600000; clockIn = null; } }
+            else if (p.punch_type === 'lunch_in') clockIn = t;
+            else if (p.punch_type === 'clock_out') { if (clockIn) { total += (t - clockIn) / 3600000; clockIn = null; } }
+        });
+        if (clockIn) total += (new Date() - clockIn) / 3600000;
+        return Math.max(0, total);
+    }
+
+    async function punch(type) {
+        await fetch('/api/punch', { method: 'POST', headers: { 'Authorization': `Bearer ${empToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ punch_type: type, employee_id: empData.id }) });
+        await loadPunches();
+    }
+
+    async function loadTimeOffRequests() {
+        const res = await fetch('/api/time-off', { headers: { 'Authorization': `Bearer ${empToken}` } });
+        const data = await res.json();
+        const requests = data.requests || [];
+        const list = document.getElementById('request-list');
+        if (!requests.length) { list.innerHTML = ''; return; }
+        const sc = { pending: 'badge-pending', approved: 'badge-approved', denied: 'badge-denied' };
+        list.innerHTML = requests.slice(0, 5).map(r => {
+            const date = new Date(r.request_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return `<div class="request-item">
+                <div>
+                    <div class="request-type">${r.request_type}</div>
+                    <div class="request-info">${date}${r.note ? ' — ' + r.note : ''}</div>
+                </div>
+                <span class="badge ${sc[r.status]}">${r.status.toUpperCase()}</span>
+            </div>`;
+        }).join('');
+    }
+
+    async function submitTimeOff() {
+        const type = document.getElementById('req-type').value;
+        const date = document.getElementById('req-date').value;
+        const note = document.getElementById('req-note').value;
+        if (!date) { alert('Please select a date'); return; }
+        await fetch('/api/time-off', { method: 'POST', headers: { 'Authorization': `Bearer ${empToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ request_type: type, request_date: date, note }) });
+        document.getElementById('req-note').value = '';
+        await loadTimeOffRequests();
+    }
+
+    function startClock() {
+        function tick() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + ' — ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+            // Update running hours every second
+            if (todayPunches.length) {
+                document.getElementById('today-hours').textContent = calcHours(todayPunches).toFixed(1);
+                document.getElementById('week-hours').textContent = calcHours(weekPunches).toFixed(1);
+            }
+        }
+        tick();
+        setInterval(tick, 1000);
+    }
+</script>
+</body>
+</html>

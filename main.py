@@ -65,6 +65,12 @@ async def startup():
 # ═══════════════════════════════════════════════════════════════
 # STATIC PAGES
 # ═══════════════════════════════════════════════════════════════
+@app.get("/labor")
+async def labor_page():
+    return FileResponse("static/labor.html")
+@app.get("/punch")
+async def punch_page():
+    return FileResponse("static/punch.html")
 
 @app.get("/")
 async def root():

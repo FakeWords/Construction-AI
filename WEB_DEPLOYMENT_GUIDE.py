@@ -1,5 +1,5 @@
 """
-FIELDWISE AI - WEB INTERFACE DEPLOYMENT GUIDE
+Fieldwise - WEB INTERFACE DEPLOYMENT GUIDE
 Production-ready web application for automated construction takeoffs
 
 STACK:
@@ -124,7 +124,7 @@ FRONTEND_HTML = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fieldwise AI - Automated Takeoff</title>
+    <title>Fieldwise - Automated Takeoff</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -221,7 +221,7 @@ FRONTEND_HTML = '''
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏗️ Fieldwise AI</h1>
+            <h1>🏗️ Fieldwise</h1>
             <p class="subtitle">Automated Construction Takeoffs - Powered by AI</p>
         </div>
         

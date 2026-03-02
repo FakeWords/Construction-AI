@@ -1,5 +1,5 @@
 """
-Agentic Drawing Analyzer for Fieldwise AI
+Agentic Drawing Analyzer for Fieldwise
 Claude autonomously examines electrical drawings using tools to zoom, enhance, and extract data
 
 NOW WITH OPENCV PREPROCESSING FOR STRUCTURAL DETECTION

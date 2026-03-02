@@ -82,7 +82,7 @@ class MaterialTakeoffExporter:
         ws['A4'] = "Date:"
         ws['B4'] = datetime.now().strftime("%Y-%m-%d %H:%M")
         ws['A5'] = "Prepared by:"
-        ws['B5'] = "Fieldwise AI - Automated Takeoff"
+        ws['B5'] = "Fieldwise - Automated Takeoff"
         
         # Summary header
         ws['A7'] = "SUMMARY"

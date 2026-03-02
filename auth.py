@@ -1,5 +1,5 @@
 """
-Fieldwise AI - Authentication
+Fieldwise - Authentication
 JWT token management and password hashing
 """
 

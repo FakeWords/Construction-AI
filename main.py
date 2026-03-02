@@ -1,5 +1,5 @@
 """
-Fieldwise AI - Construction Intelligence Platform
+Fieldwise - Construction Intelligence Platform
 Backend API - Complete Production Version
 """
 
@@ -35,7 +35,7 @@ from fastapi import FastAPI
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 app = FastAPI(
-    title="Fieldwise AI",
+    title="Fieldwise",
     description="AI-powered construction intelligence platform",
     version="2.0.0"
 )

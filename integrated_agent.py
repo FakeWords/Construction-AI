@@ -1,5 +1,5 @@
 """
-FIELDWISE AI - ULTIMATE DRAWING ANALYZER
+Fieldwise - ULTIMATE DRAWING ANALYZER
 Combines OpenCV (structure) + Google Vision (OCR) + Claude (reasoning)
 This is production-grade automated electrical takeoff
 """
@@ -83,7 +83,7 @@ class IntegratedDrawingAgent:
         self.code_book = code_book
 
         console.print(Panel.fit(
-            f"[bold cyan]FIELDWISE AI - INTEGRATED ANALYZER[/bold cyan]\n"
+            f"[bold cyan]Fieldwise - INTEGRATED ANALYZER[/bold cyan]\n"
             f"Drawing: {image_path}\n"
             f"Trade: {trade.upper()}",
             border_style="cyan"

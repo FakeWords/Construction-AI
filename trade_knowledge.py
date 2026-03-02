@@ -1,5 +1,5 @@
 """
-Trade Knowledge & Validation Rules for Fieldwise AI
+Trade Knowledge & Validation Rules for Fieldwise
 Comprehensive engineering knowledge for all construction trades
 """
 

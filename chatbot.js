@@ -1,4 +1,4 @@
-// Fieldwise AI — Smart Construction Chatbot
+// Fieldwise — Smart Construction Chatbot
 // Drop this script into any page to activate the floating chat widget
 
 (function() {
@@ -445,7 +445,7 @@
         <div id="fw-chat-dot"></div>
         <div id="fw-cart-badge" style="display:none"></div>
 
-        <button id="fw-chat-btn" onclick="fwToggle()" title="Ask Fieldwise AI">🔧</button>
+        <button id="fw-chat-btn" onclick="fwToggle()" title="Ask Fieldwise">🔧</button>
 
         <div id="fw-chat-drawer">
             <div class="fw-header">
@@ -505,7 +505,7 @@
     let cart = [];
     const history = [];
 
-    const SYSTEM_PROMPT = `You are a senior construction engineer embedded in the Fieldwise AI platform with 20+ years of hands-on experience across electrical, HVAC, plumbing, and fire protection trades. You work like a trusted field engineer — direct, practical, no fluff.
+    const SYSTEM_PROMPT = `You are a senior construction engineer embedded in the Fieldwise platform with 20+ years of hands-on experience across electrical, HVAC, plumbing, and fire protection trades. You work like a trusted field engineer — direct, practical, no fluff.
 
 Your expertise:
 - Electrical: NEC code compliance, panel sizing, wire sizing, conduit fill, load calculations, grounding, GFCI/AFCI requirements
@@ -657,7 +657,7 @@ You are not a general AI — you are a construction specialist. If asked about n
         const typingEl = appendTyping();
 
         try {
-           const response = await fetch('/api/chat', {
+          const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -667,7 +667,7 @@ You are not a general AI — you are a construction specialist. If asked about n
 });
 
 const data = await response.json();
-typingEl.remove();
+            typingEl.remove();
 
 const reply = data.content || 'Sorry, something went wrong.';
             history.push({ role: 'assistant', content: reply });

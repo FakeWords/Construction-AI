@@ -1,5 +1,5 @@
 """
-Fieldwise AI - Database Layer
+Fieldwise - Database Layer
 PostgreSQL connection and schema management
 """
 
@@ -76,9 +76,43 @@ def init_db():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
+        # Project files table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_files (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                gcs_path VARCHAR(500) NOT NULL,
+                size INTEGER,
+                uploaded_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
 
+        # Project RFIs table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_rfis (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                rfi_number VARCHAR(50),
+                subject VARCHAR(500) NOT NULL,
+                description TEXT,
+                assigned_to VARCHAR(255),
+                due_date DATE,
+                status VARCHAR(50) DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        # Project notes table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS project_notes (
+                id SERIAL PRIMARY KEY,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                content TEXT NOT NULL,
+                author_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
         print("[DB] Schema initialized successfully")
-
 
 def get_user_by_email(email: str):
     with get_db() as conn:

@@ -67,10 +67,13 @@ async def startup():
 # ═══════════════════════════════════════════════════════════════
 @app.get("/labor")
 async def labor_page():
-    return FileResponse("static/labor.html")
+    with open("labor.html", "r") as f:
+        return Response(content=f.read(), media_type="text/html")
+
 @app.get("/punch")
 async def punch_page():
-    return FileResponse("static/punch.html")
+    with open("punch.html", "r") as f:
+        return Response(content=f.read(), media_type="text/html")
 
 @app.get("/")
 async def root():

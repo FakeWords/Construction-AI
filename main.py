@@ -737,8 +737,7 @@ async def create_punch(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")
-employee_id = raw.get("id") if isinstance(raw, dict) else raw
-    print(f"[PUNCH] payload={payload} employee_id={employee_id}")
+    employee_id = raw.get("id") if isinstance(raw, dict) else raw
     punch_type = data.get("punch_type")
     with get_db() as conn:
         cur = conn.cursor()

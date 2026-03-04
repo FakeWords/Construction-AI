@@ -749,7 +749,7 @@ async def create_punch(request: Request):
     return dict(punch)
 
 @app.get("/api/punch/today")
-    async def get_today_punches(request: Request):
+async def get_today_punches(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")

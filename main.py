@@ -736,7 +736,8 @@ async def create_punch(request: Request):
     data = await request.json()
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
-    employee_id = payload.get("id")
+    raw = payload.get("user_id")
+employee_id = raw.get("id") if isinstance(raw, dict) else raw
     print(f"[PUNCH] payload={payload} employee_id={employee_id}")
     punch_type = data.get("punch_type")
     with get_db() as conn:
@@ -752,7 +753,8 @@ async def create_punch(request: Request):
 async def get_today_punches(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
-    employee_id = payload.get("id")
+    raw = payload.get("user_id")
+employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -768,7 +770,8 @@ async def get_today_punches(request: Request):
 async def get_week_punches(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
-    employee_id = payload.get("id")
+    raw = payload.get("user_id")
+employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -823,7 +826,8 @@ async def get_all_timesheets(request: Request):
 async def request_time_off(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
-    employee_id = payload.get("id")
+    raw = payload.get("user_id")
+employee_id = raw.get("id") if isinstance(raw, dict) else raw
     data = await request.json()
     with get_db() as conn:
         cur = conn.cursor()
@@ -838,7 +842,8 @@ async def request_time_off(request: Request):
 async def get_time_off_requests(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
-    employee_id = payload.get("id")
+    raw = payload.get("user_id")
+employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""

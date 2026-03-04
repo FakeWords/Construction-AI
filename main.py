@@ -749,11 +749,11 @@ async def create_punch(request: Request):
     return dict(punch)
 
 @app.get("/api/punch/today")
-async def get_today_punches(request: Request):
+    async def get_today_punches(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")
-employee_id = raw.get("id") if isinstance(raw, dict) else raw
+    employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -770,7 +770,7 @@ async def get_week_punches(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")
-employee_id = raw.get("id") if isinstance(raw, dict) else raw
+    employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -826,7 +826,7 @@ async def request_time_off(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")
-employee_id = raw.get("id") if isinstance(raw, dict) else raw
+    employee_id = raw.get("id") if isinstance(raw, dict) else raw
     data = await request.json()
     with get_db() as conn:
         cur = conn.cursor()
@@ -842,7 +842,7 @@ async def get_time_off_requests(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     payload = decode_token(token)
     raw = payload.get("user_id")
-employee_id = raw.get("id") if isinstance(raw, dict) else raw
+    employee_id = raw.get("id") if isinstance(raw, dict) else raw
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute("""
